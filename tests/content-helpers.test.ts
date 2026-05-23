@@ -33,6 +33,7 @@ describe("content helpers", () => {
 
   it("formats dates in Chinese numeric style", () => {
     expect(displayDate(new Date("2026-05-23"))).toBe("2026-05-23");
+    expect(displayDate("2026-05-23")).toBe("2026-05-23");
   });
 
   it("sorts unique strings", () => {
