@@ -15,7 +15,7 @@ const entries = (await getCollection("topics")).sort(byUpdatedDesc);
   </section>
   <div class="grid cards">
     {entries.map((entry) => (
-      <EntryCard href={`/topics/${entry.id}/`} title={entry.data.title} summary={entry.data.summary} meta={[entry.data.priority, ...entry.data.regions.slice(0, 3)]} status={entry.data.status} />
+      <EntryCard href={`/topics/${entry.id}/`} title={entry.data.title} summary={entry.data.summary} meta={[entry.data.priority, ...entry.data.regions.slice(0, 3)]} status={entry.data.status} visibility={entry.data.visibility} />
     ))}
   </div>
 </BaseLayout>

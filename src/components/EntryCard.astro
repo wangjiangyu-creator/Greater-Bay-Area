@@ -8,9 +8,10 @@ interface Props {
   summary: string;
   meta?: string[];
   status?: string;
+  visibility?: string;
 }
 
-const { href, title, summary, meta = [], status } = Astro.props;
+const { href, title, summary, meta = [], status, visibility } = Astro.props;
 ---
 
 <article class="panel entry-card">
@@ -19,5 +20,10 @@ const { href, title, summary, meta = [], status } = Astro.props;
     <p>{summary}</p>
   </div>
   {meta.length > 0 && <MetaList items={meta} />}
-  {status && <StatusPill value={status} />}
+  {(status || visibility) && (
+    <div class="card-statuses">
+      {status && <StatusPill value={status} />}
+      {visibility && <StatusPill value={visibility} />}
+    </div>
+  )}
 </article>

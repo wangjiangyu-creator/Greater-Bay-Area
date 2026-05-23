@@ -15,7 +15,7 @@ const entries = (await getCollection("comparisons")).sort(byUpdatedDesc);
   </section>
   <div class="grid cards">
     {entries.map((entry) => (
-      <EntryCard href={`/comparisons/${entry.id}/`} title={entry.data.title} summary={entry.data.keyQuestions.join("；")} meta={entry.data.mechanisms.slice(0, 3)} status={entry.data.status} />
+      <EntryCard href={`/comparisons/${entry.id}/`} title={entry.data.title} summary={entry.data.keyQuestions.join("；")} meta={entry.data.mechanisms.slice(0, 3)} status={entry.data.status} visibility={entry.data.visibility} />
     ))}
   </div>
 </BaseLayout>

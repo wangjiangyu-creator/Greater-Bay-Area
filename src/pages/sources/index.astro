@@ -15,7 +15,7 @@ const entries = (await getCollection("sources")).sort(byUpdatedDesc);
   </section>
   <div class="grid cards">
     {entries.map((entry) => (
-      <EntryCard href={`/sources/${entry.id}/`} title={entry.data.title} summary={entry.data.summary} meta={[entry.data.materialType, entry.data.issuer, displayDate(entry.data.date)]} status={entry.data.status} />
+      <EntryCard href={`/sources/${entry.id}/`} title={entry.data.title} summary={entry.data.summary} meta={[entry.data.materialType, entry.data.issuer, displayDate(entry.data.date)]} status={entry.data.status} visibility={entry.data.visibility} />
     ))}
   </div>
 </BaseLayout>

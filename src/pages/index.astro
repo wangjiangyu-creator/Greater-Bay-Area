@@ -10,6 +10,7 @@ const sources = (await getCollection("sources")).sort(byUpdatedDesc);
 const cases = (await getCollection("cases")).sort(byUpdatedDesc);
 const comparisons = (await getCollection("comparisons")).sort(byUpdatedDesc);
 const outputs = (await getCollection("outputs")).sort(byUpdatedDesc);
+const firstPhaseTopics = topics.filter((entry) => entry.data.priority === "第一期");
 ---
 
 <BaseLayout title="研究总览">
@@ -31,13 +32,14 @@ const outputs = (await getCollection("outputs")).sort(byUpdatedDesc);
     <div>
       <h2>第一期专题</h2>
       <div class="grid cards">
-        {topics.slice(0, 6).map((entry) => (
+        {firstPhaseTopics.slice(0, 6).map((entry) => (
           <EntryCard
             href={`/topics/${entry.id}/`}
             title={entry.data.title}
             summary={entry.data.summary}
             meta={[entry.data.priority, ...entry.data.mechanisms.slice(0, 2)]}
             status={entry.data.status}
+            visibility={entry.data.visibility}
           />
         ))}
       </div>
@@ -62,6 +64,7 @@ const outputs = (await getCollection("outputs")).sort(byUpdatedDesc);
           summary={entry.data.innovation}
           meta={[entry.data.batch].concat(entry.data.mechanisms.slice(0, 2))}
           status={entry.data.status}
+          visibility={entry.data.visibility}
         />
       ))}
       {outputs.slice(0, 2).map((entry) => (
@@ -71,6 +74,7 @@ const outputs = (await getCollection("outputs")).sort(byUpdatedDesc);
           summary={entry.data.summary}
           meta={[entry.data.outputType, entry.data.version]}
           status={entry.data.status}
+          visibility={entry.data.visibility}
         />
       ))}
     </div>

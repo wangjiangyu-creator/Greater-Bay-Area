@@ -1,6 +1,7 @@
 type EntryWithUpdated = {
   id: string;
   data: {
+    title?: string;
     updated: Date;
   };
 };
@@ -18,7 +19,17 @@ type EntryWithTopics = {
 };
 
 export function byUpdatedDesc<T extends EntryWithUpdated>(a: T, b: T): number {
-  return b.data.updated.getTime() - a.data.updated.getTime();
+  const dateDelta = b.data.updated.getTime() - a.data.updated.getTime();
+  if (dateDelta !== 0) {
+    return dateDelta;
+  }
+
+  const titleDelta = (a.data.title ?? "").localeCompare(b.data.title ?? "", "zh-Hans-CN");
+  if (titleDelta !== 0) {
+    return titleDelta;
+  }
+
+  return a.id.localeCompare(b.id);
 }
 
 export function countByStatus<T extends EntryWithStatus>(entries: T[]): Record<string, number> {
