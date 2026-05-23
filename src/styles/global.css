@@ -52,7 +52,8 @@ a:hover {
 .topbar-inner,
 .page,
 .footer-inner {
-  width: min(1180px, calc(100% - 32px));
+  max-width: 1180px;
+  width: calc(100vw - 32px);
   margin: 0 auto;
 }
 
@@ -166,6 +167,7 @@ p {
   display: grid;
   gap: 10px;
   min-height: 190px;
+  overflow-wrap: anywhere;
 }
 
 .entry-card p {
@@ -231,6 +233,7 @@ p {
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
+  overflow-x: auto;
   padding: 24px;
 }
 
@@ -239,6 +242,8 @@ p {
   display: block;
   max-width: 100%;
   overflow-x: auto;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .content-body th,
