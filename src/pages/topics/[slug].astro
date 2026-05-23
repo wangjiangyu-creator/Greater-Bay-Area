@@ -1,9 +1,10 @@
 ---
 import { getCollection, render } from "astro:content";
 import MetaList from "../../components/MetaList.astro";
+import RelatedLinks from "../../components/RelatedLinks.astro";
 import StatusPill from "../../components/StatusPill.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { displayDate } from "../../lib/content";
+import { byUpdatedDesc, displayDate } from "../../lib/content";
 
 export async function getStaticPaths() {
   const entries = await getCollection("topics");
@@ -12,6 +13,28 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+const relatedSources = (await getCollection("sources")).filter((source) => source.data.topics.includes(entry.id)).sort(byUpdatedDesc);
+const relatedCases = (await getCollection("cases")).filter((item) => item.data.topics.includes(entry.id)).sort(byUpdatedDesc);
+const relatedComparisons = (await getCollection("comparisons")).filter((item) => item.data.topics.includes(entry.id)).sort(byUpdatedDesc);
+const relatedOutputs = (await getCollection("outputs")).filter((item) => item.data.topics.includes(entry.id)).sort(byUpdatedDesc);
+const relatedGroups = [
+  {
+    title: "关联法源",
+    items: relatedSources.map((item) => ({ href: `/sources/${item.id}/`, title: item.data.title, meta: item.data.citation }))
+  },
+  {
+    title: "关联案例",
+    items: relatedCases.map((item) => ({ href: `/cases/${item.id}/`, title: item.data.title, meta: item.data.batch }))
+  },
+  {
+    title: "规则对照",
+    items: relatedComparisons.map((item) => ({ href: `/comparisons/${item.id}/`, title: item.data.title, meta: item.data.status }))
+  },
+  {
+    title: "研究成果",
+    items: relatedOutputs.map((item) => ({ href: `/outputs/${item.id}/`, title: item.data.title, meta: item.data.outputType }))
+  }
+];
 ---
 
 <BaseLayout title={entry.data.title} description={entry.data.summary}>
@@ -28,4 +51,5 @@ const { Content } = await render(entry);
   <article class="content-body">
     <Content />
   </article>
+  <RelatedLinks groups={relatedGroups} />
 </BaseLayout>

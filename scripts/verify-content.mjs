@@ -9,6 +9,7 @@ const files = await fg("src/content/**/*.md", { cwd: root });
 const failures = [];
 const expectedCollections = ["topics", "sources", "cases", "comparisons", "outputs"];
 const idsByCollection = new Map(expectedCollections.map((collection) => [collection, new Set()]));
+const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function collectionFor(file) {
   return file.split("/")[2];
@@ -24,14 +25,35 @@ function requireField(file, data, field) {
   }
 }
 
-function requireReferences(file, data, field, collection) {
-  const references = data[field];
-  if (!Array.isArray(references)) {
-    return;
+function requireStringArrayField(file, data, field) {
+  const value = data[field];
+  if (!Array.isArray(value) || value.length === 0) {
+    failures.push(`${file}: missing ${field}`);
+    return [];
   }
 
+  const validValues = [];
+  value.forEach((item, index) => {
+    if (typeof item !== "string" || item.trim() === "") {
+      failures.push(`${file}: ${field}[${index}] must be a non-empty string`);
+      return;
+    }
+
+    validValues.push(item);
+  });
+
+  return validValues;
+}
+
+function requireReferences(file, data, field, collection) {
+  const references = requireStringArrayField(file, data, field);
   const knownIds = idsByCollection.get(collection);
   for (const reference of references) {
+    if (!slugPattern.test(reference)) {
+      failures.push(`${file}: invalid ${field} reference "${reference}"`);
+      continue;
+    }
+
     if (!knownIds?.has(reference)) {
       failures.push(`${file}: unknown ${field} reference "${reference}" in ${collection}`);
     }
@@ -66,40 +88,37 @@ for (const file of files) {
   if (file.includes("/sources/")) {
     requireField(file, data, "originalUrl");
     requireField(file, data, "citation");
+    requireReferences(file, data, "topics", "topics");
   }
 
   if (file.includes("/cases/")) {
     requireField(file, data, "sourceUrl");
     requireField(file, data, "legalBasis");
-    requireField(file, data, "paperAngles");
+    requireStringArrayField(file, data, "paperAngles");
+    requireReferences(file, data, "topics", "topics");
+    requireReferences(file, data, "relatedSources", "sources");
   }
 
   if (file.includes("/topics/")) {
     requireField(file, data, "summary");
-    requireField(file, data, "mechanisms");
+    requireStringArrayField(file, data, "mechanisms");
   }
 
   if (file.includes("/comparisons/")) {
-    requireField(file, data, "keyQuestions");
-    requireField(file, data, "relatedSources");
+    requireStringArrayField(file, data, "keyQuestions");
+    requireReferences(file, data, "topics", "topics");
+    requireReferences(file, data, "relatedSources", "sources");
   }
 
   if (file.includes("/outputs/")) {
     requireField(file, data, "outputType");
-    requireField(file, data, "authors");
+    requireStringArrayField(file, data, "authors");
     requireField(file, data, "summary");
-    requireField(file, data, "topics");
-    requireField(file, data, "relatedCases");
-    requireField(file, data, "relatedSources");
+    requireReferences(file, data, "topics", "topics");
+    requireReferences(file, data, "relatedCases", "cases");
+    requireReferences(file, data, "relatedSources", "sources");
     requireField(file, data, "version");
   }
-
-  if (!file.includes("/topics/")) {
-    requireReferences(file, data, "topics", "topics");
-  }
-
-  requireReferences(file, data, "relatedSources", "sources");
-  requireReferences(file, data, "relatedCases", "cases");
 }
 
 if (failures.length > 0) {

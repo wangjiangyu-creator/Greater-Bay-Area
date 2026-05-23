@@ -6,11 +6,22 @@
 
 ```bash
 npm install
-npm run content:seed
 npm run dev
 ```
 
 默认开发地址是 `http://127.0.0.1:4321/`。如果 4321 已被占用，Astro 会自动使用下一个可用端口；本次本地验收使用的是 `http://127.0.0.1:4323/`。
+
+仓库已包含第一批示例资料。只有在需要补齐缺失示例资料时才运行：
+
+```bash
+npm run content:seed
+```
+
+该命令默认跳过已有文件。如需重新生成并覆盖示例资料，使用：
+
+```bash
+npm run content:seed -- --force
+```
 
 ## 检查
 

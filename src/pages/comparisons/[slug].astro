@@ -1,9 +1,10 @@
 ---
 import { getCollection, render } from "astro:content";
 import MetaList from "../../components/MetaList.astro";
+import RelatedLinks from "../../components/RelatedLinks.astro";
 import StatusPill from "../../components/StatusPill.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { displayDate } from "../../lib/content";
+import { byUpdatedDesc, displayDate } from "../../lib/content";
 
 export async function getStaticPaths() {
   const entries = await getCollection("comparisons");
@@ -12,6 +13,24 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+const topicIds = new Set(entry.data.topics);
+const relatedTopics = (await getCollection("topics")).filter((topic) => topicIds.has(topic.id)).sort(byUpdatedDesc);
+const relatedSources = (await getCollection("sources")).filter((source) => entry.data.relatedSources.includes(source.id)).sort(byUpdatedDesc);
+const relatedCases = (await getCollection("cases")).filter((item) => item.data.topics.some((topic) => topicIds.has(topic))).sort(byUpdatedDesc);
+const relatedGroups = [
+  {
+    title: "关联专题",
+    items: relatedTopics.map((item) => ({ href: `/topics/${item.id}/`, title: item.data.title, meta: item.data.priority }))
+  },
+  {
+    title: "关联法源",
+    items: relatedSources.map((item) => ({ href: `/sources/${item.id}/`, title: item.data.title, meta: item.data.citation }))
+  },
+  {
+    title: "同专题案例",
+    items: relatedCases.map((item) => ({ href: `/cases/${item.id}/`, title: item.data.title, meta: item.data.batch }))
+  }
+];
 ---
 
 <BaseLayout title={entry.data.title}>
@@ -28,4 +47,5 @@ const { Content } = await render(entry);
   <article class="content-body">
     <Content />
   </article>
+  <RelatedLinks groups={relatedGroups} />
 </BaseLayout>

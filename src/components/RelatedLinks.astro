@@ -1,0 +1,37 @@
+---
+interface RelatedItem {
+  href: string;
+  title: string;
+  meta?: string;
+}
+
+interface RelatedGroup {
+  title: string;
+  items: RelatedItem[];
+}
+
+interface Props {
+  groups: RelatedGroup[];
+}
+
+const visibleGroups = Astro.props.groups.filter((group) => group.items.length > 0);
+---
+
+{visibleGroups.length > 0 && (
+  <section class="section related-links" aria-label="关联资料">
+    <h2>关联资料</h2>
+    {visibleGroups.map((group) => (
+      <div class="related-group">
+        <h3>{group.title}</h3>
+        <ul>
+          {group.items.map((item) => (
+            <li>
+              <a href={item.href}>{item.title}</a>
+              {item.meta && <span>{item.meta}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+)}

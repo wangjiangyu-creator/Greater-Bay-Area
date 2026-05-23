@@ -275,6 +275,41 @@ p {
   margin-bottom: 18px;
 }
 
+.related-links {
+  display: grid;
+  gap: 16px;
+}
+
+.related-group {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+}
+
+.related-group ul {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.related-group li {
+  display: grid;
+  gap: 3px;
+}
+
+.related-group a {
+  font-weight: 700;
+}
+
+.related-group span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 input,
 select {
   border: 1px solid var(--line);

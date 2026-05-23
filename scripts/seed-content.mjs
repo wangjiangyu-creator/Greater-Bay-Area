@@ -4,6 +4,9 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const contentRoot = path.join(root, "src", "content");
+const force = process.argv.includes("--force");
+let written = 0;
+let skipped = 0;
 
 function yamlValue(value) {
   if (Array.isArray(value)) {
@@ -24,7 +27,13 @@ function writeEntry(collection, slug, data, body) {
   fs.mkdirSync(directory, { recursive: true });
   const file = path.join(directory, `${slug}.md`);
   const markdown = `---\n${toFrontmatter(data)}---\n\n${body.trim()}\n`;
+  if (fs.existsSync(file) && !force) {
+    skipped += 1;
+    return;
+  }
+
   fs.writeFileSync(file, markdown, "utf8");
+  written += 1;
 }
 
 const updated = "2026-05-23";
@@ -465,4 +474,4 @@ for (const entry of cases) writeEntry("cases", entry.slug, entry.data, entry.bod
 for (const entry of comparisons) writeEntry("comparisons", entry.slug, entry.data, entry.body);
 for (const entry of outputs) writeEntry("outputs", entry.slug, entry.data, entry.body);
 
-console.log("Seeded research portal content.");
+console.log(`Seeded research portal content. Written: ${written}. Skipped existing: ${skipped}.`);
