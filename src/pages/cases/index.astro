@@ -1,0 +1,21 @@
+---
+import { getCollection } from "astro:content";
+import EntryCard from "../../components/EntryCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { byUpdatedDesc } from "../../lib/content";
+
+const entries = (await getCollection("cases")).sort(byUpdatedDesc);
+---
+
+<BaseLayout title="典型案例库">
+  <section class="page-header">
+    <span class="eyebrow">案例库</span>
+    <h1>典型案例库</h1>
+    <p class="lede">把官方典型案例整理为可分析、可引用、可关联专题和论文的研究卡片。</p>
+  </section>
+  <div class="grid cards">
+    {entries.map((entry) => (
+      <EntryCard href={`/cases/${entry.id}/`} title={entry.data.title} summary={entry.data.innovation} meta={[entry.data.batch].concat(entry.data.mechanisms.slice(0, 2))} status={entry.data.status} />
+    ))}
+  </div>
+</BaseLayout>

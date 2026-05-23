@@ -1,0 +1,21 @@
+---
+import { getCollection } from "astro:content";
+import EntryCard from "../../components/EntryCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { byUpdatedDesc, displayDate } from "../../lib/content";
+
+const entries = (await getCollection("sources")).sort(byUpdatedDesc);
+---
+
+<BaseLayout title="政策与法源库">
+  <section class="page-header">
+    <span class="eyebrow">资料库</span>
+    <h1>政策与法源库</h1>
+    <p class="lede">沉淀政策文件、规范文本、司法文件、监管规则、合作协议和官方案例来源。</p>
+  </section>
+  <div class="grid cards">
+    {entries.map((entry) => (
+      <EntryCard href={`/sources/${entry.id}/`} title={entry.data.title} summary={entry.data.summary} meta={[entry.data.materialType, entry.data.issuer, displayDate(entry.data.date)]} status={entry.data.status} />
+    ))}
+  </div>
+</BaseLayout>

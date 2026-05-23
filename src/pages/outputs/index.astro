@@ -1,0 +1,21 @@
+---
+import { getCollection } from "astro:content";
+import EntryCard from "../../components/EntryCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { byUpdatedDesc } from "../../lib/content";
+
+const entries = (await getCollection("outputs")).sort(byUpdatedDesc);
+---
+
+<BaseLayout title="研究成果">
+  <section class="page-header">
+    <span class="eyebrow">成果</span>
+    <h1>研究成果</h1>
+    <p class="lede">集中管理总报告、专题论文、政策简报、会议纪要、访谈摘要、文献综述和书目。</p>
+  </section>
+  <div class="grid cards">
+    {entries.map((entry) => (
+      <EntryCard href={`/outputs/${entry.id}/`} title={entry.data.title} summary={entry.data.summary} meta={[entry.data.outputType, `版本 ${entry.data.version}`]} status={entry.data.status} />
+    ))}
+  </div>
+</BaseLayout>

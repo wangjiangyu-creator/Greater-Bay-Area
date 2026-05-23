@@ -1,0 +1,21 @@
+---
+import { getCollection } from "astro:content";
+import EntryCard from "../../components/EntryCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { byUpdatedDesc } from "../../lib/content";
+
+const entries = (await getCollection("topics")).sort(byUpdatedDesc);
+---
+
+<BaseLayout title="专题研究">
+  <section class="page-header">
+    <span class="eyebrow">专题研究</span>
+    <h1>专题研究</h1>
+    <p class="lede">每个专题都是总报告分章和论文写作的材料池。</p>
+  </section>
+  <div class="grid cards">
+    {entries.map((entry) => (
+      <EntryCard href={`/topics/${entry.id}/`} title={entry.data.title} summary={entry.data.summary} meta={[entry.data.priority, ...entry.data.regions.slice(0, 3)]} status={entry.data.status} />
+    ))}
+  </div>
+</BaseLayout>

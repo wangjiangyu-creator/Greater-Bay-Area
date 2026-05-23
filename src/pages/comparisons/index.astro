@@ -1,0 +1,21 @@
+---
+import { getCollection } from "astro:content";
+import EntryCard from "../../components/EntryCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { byUpdatedDesc } from "../../lib/content";
+
+const entries = (await getCollection("comparisons")).sort(byUpdatedDesc);
+---
+
+<BaseLayout title="三法域规则对照">
+  <section class="page-header">
+    <span class="eyebrow">规则对照</span>
+    <h1>三法域规则对照</h1>
+    <p class="lede">按专题比较内地、香港、澳门规则差异、现有机制和待核验问题。</p>
+  </section>
+  <div class="grid cards">
+    {entries.map((entry) => (
+      <EntryCard href={`/comparisons/${entry.id}/`} title={entry.data.title} summary={entry.data.keyQuestions.join("；")} meta={entry.data.mechanisms.slice(0, 3)} status={entry.data.status} />
+    ))}
+  </div>
+</BaseLayout>

@@ -1,0 +1,78 @@
+---
+import { getCollection } from "astro:content";
+import EntryCard from "../components/EntryCard.astro";
+import MetricCard from "../components/MetricCard.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { byUpdatedDesc } from "../lib/content";
+
+const topics = (await getCollection("topics")).sort(byUpdatedDesc);
+const sources = (await getCollection("sources")).sort(byUpdatedDesc);
+const cases = (await getCollection("cases")).sort(byUpdatedDesc);
+const comparisons = (await getCollection("comparisons")).sort(byUpdatedDesc);
+const outputs = (await getCollection("outputs")).sort(byUpdatedDesc);
+---
+
+<BaseLayout title="研究总览">
+  <section class="page-header">
+    <span class="eyebrow">研究总览</span>
+    <h1>粤港澳大湾区法制一体化研究操作台</h1>
+    <p class="lede">围绕规则衔接、机制对接、三法域比较、典型案例和专题论文生成建立统一资料底座。</p>
+  </section>
+
+  <section class="grid cards" aria-label="内容统计">
+    <MetricCard label="专题研究" value={topics.length} />
+    <MetricCard label="政策与法源" value={sources.length} />
+    <MetricCard label="典型案例" value={cases.length} />
+    <MetricCard label="三法域对照" value={comparisons.length} />
+    <MetricCard label="研究成果" value={outputs.length} />
+  </section>
+
+  <section class="section split">
+    <div>
+      <h2>第一期专题</h2>
+      <div class="grid cards">
+        {topics.slice(0, 6).map((entry) => (
+          <EntryCard
+            href={`/topics/${entry.id}/`}
+            title={entry.data.title}
+            summary={entry.data.summary}
+            meta={[entry.data.priority, ...entry.data.mechanisms.slice(0, 2)]}
+            status={entry.data.status}
+          />
+        ))}
+      </div>
+    </div>
+    <aside class="panel">
+      <h2>近期资料</h2>
+      <ul>
+        {sources.slice(0, 5).map((entry) => (
+          <li><a href={`/sources/${entry.id}/`}>{entry.data.title}</a></li>
+        ))}
+      </ul>
+    </aside>
+  </section>
+
+  <section class="section">
+    <h2>案例与成果</h2>
+    <div class="grid cards">
+      {cases.slice(0, 3).map((entry) => (
+        <EntryCard
+          href={`/cases/${entry.id}/`}
+          title={entry.data.title}
+          summary={entry.data.innovation}
+          meta={[entry.data.batch].concat(entry.data.mechanisms.slice(0, 2))}
+          status={entry.data.status}
+        />
+      ))}
+      {outputs.slice(0, 2).map((entry) => (
+        <EntryCard
+          href={`/outputs/${entry.id}/`}
+          title={entry.data.title}
+          summary={entry.data.summary}
+          meta={[entry.data.outputType, entry.data.version]}
+          status={entry.data.status}
+        />
+      ))}
+    </div>
+  </section>
+</BaseLayout>
