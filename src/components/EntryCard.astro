@@ -1,0 +1,23 @@
+---
+import MetaList from "./MetaList.astro";
+import StatusPill from "./StatusPill.astro";
+
+interface Props {
+  href: string;
+  title: string;
+  summary: string;
+  meta?: string[];
+  status?: string;
+}
+
+const { href, title, summary, meta = [], status } = Astro.props;
+---
+
+<article class="panel entry-card">
+  <div>
+    <h3><a href={href}>{title}</a></h3>
+    <p>{summary}</p>
+  </div>
+  {meta.length > 0 && <MetaList items={meta} />}
+  {status && <StatusPill value={status} />}
+</article>

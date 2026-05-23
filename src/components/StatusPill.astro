@@ -1,0 +1,10 @@
+---
+interface Props {
+  value: string;
+}
+
+const { value } = Astro.props;
+const className = value.includes("需") ? "pill needs-review" : value.includes("内部") ? "pill private" : "pill";
+---
+
+<span class={className}>{value}</span>

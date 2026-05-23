@@ -1,0 +1,47 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "粤港澳大湾区法制一体化研究门户" } = Astro.props;
+const pageTitle = `${title} | 粤港澳大湾区法制一体化研究门户`;
+---
+
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="/">
+            <strong>大湾区法制一体化研究</strong>
+            <span>规则衔接 · 机制对接</span>
+          </a>
+          <nav class="nav" aria-label="主导航">
+            <a href="/topics/">专题</a>
+            <a href="/sources/">法源</a>
+            <a href="/cases/">案例</a>
+            <a href="/comparisons/">对照</a>
+            <a href="/outputs/">成果</a>
+            <a href="/search/">检索</a>
+          </nav>
+        </div>
+      </header>
+      <main class="page">
+        <slot />
+      </main>
+      <footer>
+        <div class="footer-inner">粤港澳大湾区法制一体化研究门户 · 内部研究与评审展示版本</div>
+      </footer>
+    </div>
+  </body>
+</html>
