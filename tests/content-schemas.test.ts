@@ -48,6 +48,28 @@ describe("content schemas", () => {
     ).toThrow();
   });
 
+  it("rejects source records without a topic relation", () => {
+    expect(() =>
+      sourceSchema.parse({
+        title: "测试资料",
+        issuer: "测试机关",
+        date: "2026-05-23",
+        level: "政策规划",
+        regions: ["广东"],
+        materialType: "政策规划",
+        tags: ["测试"],
+        summary: "测试摘要",
+        relationToRules: "测试规则衔接关系",
+        relationToMechanisms: "测试机制对接关系",
+        originalUrl: "https://example.org",
+        citation: "测试引用",
+        status: "已摘要",
+        visibility: "评审",
+        updated: "2026-05-23"
+      })
+    ).toThrow();
+  });
+
   it("accepts valid case, comparison, and output records", () => {
     expect(
       caseSchema.parse({

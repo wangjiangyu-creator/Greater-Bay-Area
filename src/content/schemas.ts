@@ -13,8 +13,10 @@ const materialTypeSchema = z.enum(MATERIAL_TYPES);
 const statusSchema = z.enum(STATUS_VALUES);
 const visibilitySchema = z.enum(VISIBILITY_VALUES);
 
-const slugList = z.array(z.string().min(2)).default([]);
-const stringList = z.array(z.string().min(1)).default([]);
+const slugSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+const requiredSlugList = z.array(slugSchema).min(1);
+const optionalStringList = z.array(z.string().min(1)).default([]);
+const requiredStringList = z.array(z.string().min(1)).min(1);
 const updatedDate = z.coerce.date();
 
 export const topicSchema = z.object({
@@ -27,7 +29,7 @@ export const topicSchema = z.object({
   visibility: visibilitySchema,
   updated: updatedDate,
   lead: z.string().min(2),
-  tags: stringList
+  tags: optionalStringList
 });
 
 export const sourceSchema = z.object({
@@ -37,9 +39,9 @@ export const sourceSchema = z.object({
   effectiveDate: updatedDate.optional(),
   level: z.string().min(2),
   regions: z.array(regionSchema).min(1),
-  topics: slugList,
+  topics: requiredSlugList,
   materialType: materialTypeSchema,
-  tags: stringList,
+  tags: optionalStringList,
   summary: z.string().min(10),
   relationToRules: z.string().min(6),
   relationToMechanisms: z.string().min(6),
@@ -56,15 +58,15 @@ export const caseSchema = z.object({
   batch: z.string().min(2),
   sourceUrl: z.string().url(),
   regions: z.array(regionSchema).min(1),
-  topics: slugList,
+  topics: requiredSlugList,
   mechanisms: z.array(mechanismSchema).min(1),
   legalBasis: z.string().min(4),
   innovation: z.string().min(8),
   effect: z.string().min(8),
   reproducibility: z.string().min(8),
   risks: z.string().min(8),
-  paperAngles: stringList,
-  relatedSources: slugList,
+  paperAngles: requiredStringList,
+  relatedSources: requiredSlugList,
   status: statusSchema,
   visibility: visibilitySchema,
   updated: updatedDate
@@ -72,11 +74,11 @@ export const caseSchema = z.object({
 
 export const comparisonSchema = z.object({
   title: z.string().min(2),
-  topics: slugList,
+  topics: requiredSlugList,
   regions: z.array(regionSchema).min(2),
   mechanisms: z.array(mechanismSchema).min(1),
-  keyQuestions: stringList,
-  relatedSources: slugList,
+  keyQuestions: requiredStringList,
+  relatedSources: requiredSlugList,
   status: statusSchema,
   visibility: visibilitySchema,
   updated: updatedDate
@@ -94,12 +96,12 @@ export const outputSchema = z.object({
     "文献综述",
     "专题书目"
   ]),
-  authors: stringList,
+  authors: requiredStringList,
   summary: z.string().min(8),
-  keywords: stringList,
-  topics: slugList,
-  relatedCases: slugList,
-  relatedSources: slugList,
+  keywords: optionalStringList,
+  topics: requiredSlugList,
+  relatedCases: requiredSlugList,
+  relatedSources: requiredSlugList,
   status: z.enum(["选题中", "资料收集中", "提纲中", "初稿中", "修改中", "已定稿", "已发表或已提交"]),
   visibility: visibilitySchema,
   version: z.string().min(1),
