@@ -1,0 +1,105 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const topics = await getCollection("topics");
+const sources = await getCollection("sources");
+const cases = await getCollection("cases");
+const comparisons = await getCollection("comparisons");
+const outputs = await getCollection("outputs");
+
+const searchItems = topics
+  .map((entry) => ({ type: "专题", title: entry.data.title, summary: entry.data.summary, href: `/topics/${entry.id}/`, tags: entry.data.tags }))
+  .concat(sources.map((entry) => ({ type: "法源", title: entry.data.title, summary: entry.data.summary, href: `/sources/${entry.id}/`, tags: entry.data.tags })))
+  .concat(cases.map((entry) => ({ type: "案例", title: entry.data.title, summary: entry.data.innovation, href: `/cases/${entry.id}/`, tags: entry.data.mechanisms })))
+  .concat(comparisons.map((entry) => ({ type: "对照", title: entry.data.title, summary: entry.data.keyQuestions.join("；"), href: `/comparisons/${entry.id}/`, tags: entry.data.mechanisms })))
+  .concat(outputs.map((entry) => ({ type: "成果", title: entry.data.title, summary: entry.data.summary, href: `/outputs/${entry.id}/`, tags: entry.data.keywords })));
+---
+
+<BaseLayout title="检索">
+  <section class="page-header">
+    <span class="eyebrow">检索</span>
+    <h1>资料检索</h1>
+    <p class="lede">按标题、摘要、标签和内容类型检索专题、法源、案例、规则对照和研究成果。</p>
+  </section>
+
+  <section class="panel">
+    <div class="search-tools">
+      <input id="q" type="search" placeholder="输入关键词" />
+      <select id="type">
+        <option value="">全部类型</option>
+        <option value="专题">专题</option>
+        <option value="法源">法源</option>
+        <option value="案例">案例</option>
+        <option value="对照">对照</option>
+        <option value="成果">成果</option>
+      </select>
+    </div>
+    <div id="results" class="grid cards"></div>
+  </section>
+
+  <script type="application/json" id="search-data" set:html={JSON.stringify(searchItems)} is:inline />
+  <script>
+    type SearchItem = {
+      type: string;
+      title: string;
+      summary: string;
+      href: string;
+      tags?: string[];
+    };
+
+    const input = document.querySelector<HTMLInputElement>("#q");
+    const select = document.querySelector<HTMLSelectElement>("#type");
+    const results = document.querySelector<HTMLElement>("#results");
+    const dataElement = document.querySelector("#search-data");
+    const data = JSON.parse(dataElement?.textContent || "[]") as SearchItem[];
+
+    if (!input || !select || !results) {
+      throw new Error("Search controls failed to initialize.");
+    }
+
+    const inputElement = input;
+    const selectElement = select;
+    const resultsElement = results;
+
+    function render() {
+      const query = inputElement.value.trim().toLowerCase();
+      const type = selectElement.value;
+      const filtered = data.filter((item) => {
+        const haystack = [item.type, item.title, item.summary].concat(item.tags || []).join(" ").toLowerCase();
+        return (!type || item.type === type) && (!query || haystack.includes(query));
+      });
+
+      resultsElement.replaceChildren(
+        ...filtered.map((item) => {
+          const article = document.createElement("article");
+          article.className = "panel entry-card";
+
+          const body = document.createElement("div");
+          const heading = document.createElement("h3");
+          const link = document.createElement("a");
+          link.href = item.href;
+          link.textContent = item.title;
+          heading.append(link);
+
+          const summary = document.createElement("p");
+          summary.textContent = item.summary;
+          body.append(heading, summary);
+
+          const meta = document.createElement("ul");
+          meta.className = "meta";
+          const typeItem = document.createElement("li");
+          typeItem.textContent = item.type;
+          meta.append(typeItem);
+
+          article.append(body, meta);
+          return article;
+        })
+      );
+    }
+
+    inputElement.addEventListener("input", render);
+    selectElement.addEventListener("change", render);
+    render();
+  </script>
+</BaseLayout>

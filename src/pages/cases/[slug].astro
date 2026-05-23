@@ -1,0 +1,41 @@
+---
+import { getCollection, render } from "astro:content";
+import MetaList from "../../components/MetaList.astro";
+import StatusPill from "../../components/StatusPill.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { displayDate } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("cases");
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={entry.data.title} description={entry.data.innovation}>
+  <section class="page-header">
+    <span class="eyebrow">典型案例</span>
+    <h1>{entry.data.title}</h1>
+    <p class="lede">{entry.data.innovation}</p>
+    <MetaList items={[entry.data.batch, displayDate(entry.data.updated)].concat(entry.data.mechanisms)} />
+    <StatusPill value={entry.data.status} />
+  </section>
+  <section class="content-body">
+    <h2>法律与政策依据</h2>
+    <p>{entry.data.legalBasis}</p>
+    <h2>实施效果</h2>
+    <p>{entry.data.effect}</p>
+    <h2>可复制性评价</h2>
+    <p>{entry.data.reproducibility}</p>
+    <h2>风险与争议</h2>
+    <p>{entry.data.risks}</p>
+    <h2>论文线索</h2>
+    <ul>
+      {entry.data.paperAngles.map((angle) => <li>{angle}</li>)}
+    </ul>
+    <p><a href={entry.data.sourceUrl}>案例来源</a></p>
+    <Content />
+  </section>
+</BaseLayout>

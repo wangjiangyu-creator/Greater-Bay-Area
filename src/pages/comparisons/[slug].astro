@@ -1,0 +1,28 @@
+---
+import { getCollection, render } from "astro:content";
+import MetaList from "../../components/MetaList.astro";
+import StatusPill from "../../components/StatusPill.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { displayDate } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("comparisons");
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={entry.data.title}>
+  <section class="page-header">
+    <span class="eyebrow">三法域规则对照</span>
+    <h1>{entry.data.title}</h1>
+    <p class="lede">{entry.data.keyQuestions.join("；")}</p>
+    <MetaList items={[displayDate(entry.data.updated)].concat(entry.data.regions)} />
+    <StatusPill value={entry.data.status} />
+  </section>
+  <article class="content-body">
+    <Content />
+  </article>
+</BaseLayout>
