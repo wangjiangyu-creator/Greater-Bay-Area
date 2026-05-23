@@ -20,7 +20,10 @@ const { Content } = await render(entry);
     <h1>{entry.data.title}</h1>
     <p class="lede">{entry.data.keyQuestions.join("；")}</p>
     <MetaList items={[displayDate(entry.data.updated)].concat(entry.data.regions)} />
-    <StatusPill value={entry.data.status} />
+    <div class="card-statuses">
+      <StatusPill value={entry.data.status} />
+      <StatusPill value={entry.data.visibility} />
+    </div>
   </section>
   <article class="content-body">
     <Content />

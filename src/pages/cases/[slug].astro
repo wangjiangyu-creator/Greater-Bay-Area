@@ -20,7 +20,10 @@ const { Content } = await render(entry);
     <h1>{entry.data.title}</h1>
     <p class="lede">{entry.data.innovation}</p>
     <MetaList items={[entry.data.batch, displayDate(entry.data.updated)].concat(entry.data.mechanisms)} />
-    <StatusPill value={entry.data.status} />
+    <div class="card-statuses">
+      <StatusPill value={entry.data.status} />
+      <StatusPill value={entry.data.visibility} />
+    </div>
   </section>
   <section class="content-body">
     <h2>法律与政策依据</h2>

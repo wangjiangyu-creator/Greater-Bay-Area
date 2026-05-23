@@ -8,12 +8,24 @@ const cases = await getCollection("cases");
 const comparisons = await getCollection("comparisons");
 const outputs = await getCollection("outputs");
 
-const searchItems = topics
-  .map((entry) => ({ type: "专题", title: entry.data.title, summary: entry.data.summary, href: `/topics/${entry.id}/`, tags: entry.data.tags }))
-  .concat(sources.map((entry) => ({ type: "法源", title: entry.data.title, summary: entry.data.summary, href: `/sources/${entry.id}/`, tags: entry.data.tags })))
-  .concat(cases.map((entry) => ({ type: "案例", title: entry.data.title, summary: entry.data.innovation, href: `/cases/${entry.id}/`, tags: entry.data.mechanisms })))
-  .concat(comparisons.map((entry) => ({ type: "对照", title: entry.data.title, summary: entry.data.keyQuestions.join("；"), href: `/comparisons/${entry.id}/`, tags: entry.data.mechanisms })))
-  .concat(outputs.map((entry) => ({ type: "成果", title: entry.data.title, summary: entry.data.summary, href: `/outputs/${entry.id}/`, tags: entry.data.keywords })));
+type SearchItemData = {
+  type: string;
+  title: string;
+  summary: string;
+  href: string;
+  tags: string[];
+  status: string;
+  visibility: string;
+};
+
+const searchItems: SearchItemData[] = ([] as SearchItemData[])
+  .concat(topics.map((entry) => ({ type: "专题", title: entry.data.title, summary: entry.data.summary, href: `/topics/${entry.id}/`, tags: entry.data.tags, status: entry.data.status, visibility: entry.data.visibility })))
+  .concat(sources.map((entry) => ({ type: "法源", title: entry.data.title, summary: entry.data.summary, href: `/sources/${entry.id}/`, tags: [entry.data.issuer, entry.data.citation].concat(entry.data.tags), status: entry.data.status, visibility: entry.data.visibility })))
+  .concat(cases.map((entry) => ({ type: "案例", title: entry.data.title, summary: entry.data.innovation, href: `/cases/${entry.id}/`, tags: [entry.data.legalBasis, entry.data.effect].concat(entry.data.mechanisms), status: entry.data.status, visibility: entry.data.visibility })))
+  .concat(comparisons.map((entry) => ({ type: "对照", title: entry.data.title, summary: entry.data.keyQuestions.join("；"), href: `/comparisons/${entry.id}/`, tags: entry.data.mechanisms, status: entry.data.status, visibility: entry.data.visibility })))
+  .concat(outputs.map((entry) => ({ type: "成果", title: entry.data.title, summary: entry.data.summary, href: `/outputs/${entry.id}/`, tags: entry.data.authors.concat(entry.data.keywords), status: entry.data.status, visibility: entry.data.visibility })));
+
+const serializedSearchItems = JSON.stringify(searchItems).replaceAll("<", "\\u003c");
 ---
 
 <BaseLayout title="检索">
@@ -25,8 +37,8 @@ const searchItems = topics
 
   <section class="panel">
     <div class="search-tools">
-      <input id="q" type="search" placeholder="输入关键词" />
-      <select id="type">
+      <input id="q" type="search" placeholder="输入关键词" aria-label="检索关键词" />
+      <select id="type" aria-label="内容类型">
         <option value="">全部类型</option>
         <option value="专题">专题</option>
         <option value="法源">法源</option>
@@ -38,7 +50,7 @@ const searchItems = topics
     <div id="results" class="grid cards"></div>
   </section>
 
-  <script type="application/json" id="search-data" set:html={JSON.stringify(searchItems)} is:inline />
+  <script type="application/json" id="search-data" set:html={serializedSearchItems} is:inline />
   <script>
     type SearchItem = {
       type: string;
@@ -46,6 +58,8 @@ const searchItems = topics
       summary: string;
       href: string;
       tags?: string[];
+      status: string;
+      visibility: string;
     };
 
     const input = document.querySelector<HTMLInputElement>("#q");
@@ -66,7 +80,7 @@ const searchItems = topics
       const query = inputElement.value.trim().toLowerCase();
       const type = selectElement.value;
       const filtered = data.filter((item) => {
-        const haystack = [item.type, item.title, item.summary].concat(item.tags || []).join(" ").toLowerCase();
+        const haystack = [item.type, item.title, item.summary, item.status, item.visibility].concat(item.tags || []).join(" ").toLowerCase();
         return (!type || item.type === type) && (!query || haystack.includes(query));
       });
 
@@ -90,7 +104,11 @@ const searchItems = topics
           meta.className = "meta";
           const typeItem = document.createElement("li");
           typeItem.textContent = item.type;
-          meta.append(typeItem);
+          const statusItem = document.createElement("li");
+          statusItem.textContent = item.status;
+          const visibilityItem = document.createElement("li");
+          visibilityItem.textContent = item.visibility;
+          meta.append(typeItem, statusItem, visibilityItem);
 
           article.append(body, meta);
           return article;

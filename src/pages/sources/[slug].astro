@@ -20,7 +20,10 @@ const { Content } = await render(entry);
     <h1>{entry.data.title}</h1>
     <p class="lede">{entry.data.summary}</p>
     <MetaList items={[entry.data.issuer, entry.data.materialType, displayDate(entry.data.date)].concat(entry.data.regions)} />
-    <StatusPill value={entry.data.status} />
+    <div class="card-statuses">
+      <StatusPill value={entry.data.status} />
+      <StatusPill value={entry.data.visibility} />
+    </div>
   </section>
   <section class="content-body">
     <h2>规则衔接关系</h2>
