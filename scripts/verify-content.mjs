@@ -7,10 +7,50 @@ import matter from "gray-matter";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const files = await fg("src/content/**/*.md", { cwd: root });
 const failures = [];
+const expectedCollections = ["topics", "sources", "cases", "comparisons", "outputs"];
+const idsByCollection = new Map(expectedCollections.map((collection) => [collection, new Set()]));
+
+function collectionFor(file) {
+  return file.split("/")[2];
+}
 
 function requireField(file, data, field) {
-  if (data[field] === undefined || data[field] === "" || (Array.isArray(data[field]) && data[field].length === 0)) {
+  if (
+    data[field] === undefined ||
+    (typeof data[field] === "string" && data[field].trim() === "") ||
+    (Array.isArray(data[field]) && data[field].length === 0)
+  ) {
     failures.push(`${file}: missing ${field}`);
+  }
+}
+
+function requireReferences(file, data, field, collection) {
+  const references = data[field];
+  if (!Array.isArray(references)) {
+    return;
+  }
+
+  const knownIds = idsByCollection.get(collection);
+  for (const reference of references) {
+    if (!knownIds?.has(reference)) {
+      failures.push(`${file}: unknown ${field} reference "${reference}" in ${collection}`);
+    }
+  }
+}
+
+if (files.length === 0) {
+  failures.push("No content files found under src/content.");
+}
+
+for (const file of files) {
+  const collection = collectionFor(file);
+  const id = path.basename(file, ".md");
+  idsByCollection.get(collection)?.add(id);
+}
+
+for (const collection of expectedCollections) {
+  if ((idsByCollection.get(collection)?.size ?? 0) === 0) {
+    failures.push(`No content files found for collection "${collection}".`);
   }
 }
 
@@ -43,6 +83,23 @@ for (const file of files) {
     requireField(file, data, "keyQuestions");
     requireField(file, data, "relatedSources");
   }
+
+  if (file.includes("/outputs/")) {
+    requireField(file, data, "outputType");
+    requireField(file, data, "authors");
+    requireField(file, data, "summary");
+    requireField(file, data, "topics");
+    requireField(file, data, "relatedCases");
+    requireField(file, data, "relatedSources");
+    requireField(file, data, "version");
+  }
+
+  if (!file.includes("/topics/")) {
+    requireReferences(file, data, "topics", "topics");
+  }
+
+  requireReferences(file, data, "relatedSources", "sources");
+  requireReferences(file, data, "relatedCases", "cases");
 }
 
 if (failures.length > 0) {
