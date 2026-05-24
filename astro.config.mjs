@@ -1,7 +1,6 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  site: "https://wangjiangyu-creator.github.io",
-  base: "/Greater-Bay-Area",
+  site: "https://gba.eastlaw.wang",
   output: "static"
 });
