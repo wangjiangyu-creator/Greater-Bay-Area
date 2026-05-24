@@ -1,0 +1,196 @@
+---
+import { COMPARATIVE_LAW_MODULES, COMPARATIVE_LAW_TOOL_MATRIX } from "../lib/comparative-law";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const theoryCount = COMPARATIVE_LAW_MODULES.filter((module) => module.section === "基础理论").length;
+const experienceCount = COMPARATIVE_LAW_MODULES.length - theoryCount;
+const materialCount = COMPARATIVE_LAW_MODULES.reduce(
+  (count, module) =>
+    count +
+    module.literature.length +
+    module.rules.length +
+    module.institutions.length +
+    module.cases.length +
+    module.webSources.length,
+  0
+);
+---
+
+<BaseLayout
+  title="比较法"
+  description="比较法栏目：围绕市场一体化、法律融合理论，以及欧盟、美国、UNCITRAL和其他国际组织的代表性文献、制度、机构与案例，形成可直接使用的比较法资料页。"
+>
+  <section class="page-header">
+    <span class="eyebrow">比较法</span>
+    <h1>比较法与法律融合经验</h1>
+    <p class="lede">
+      本页把“比较法”从提纲扩成资料页。每个模块都补入代表文献、制度与规则、关键机构、典型案例/样本、联网资料和可继续深挖的研究抓手，便于直接进入写作和比较分析。
+    </p>
+  </section>
+
+  <section class="section split">
+    <div class="panel comparative-overview">
+      <h2>模块导引</h2>
+      <div class="status-stats">
+        <p><strong>{COMPARATIVE_LAW_MODULES.length}</strong>模块</p>
+        <p><strong>{theoryCount}</strong>基础理论</p>
+        <p><strong>{experienceCount}</strong>域外经验</p>
+        <p><strong>{COMPARATIVE_LAW_TOOL_MATRIX.length}</strong>制度工具</p>
+        <p><strong>{materialCount}</strong>条资料</p>
+      </div>
+      <div class="comparative-anchor-list">
+        {COMPARATIVE_LAW_MODULES.map((module) => (
+          <a href={`#${module.id}`} class="comparative-anchor-link">
+            <strong>{module.title}</strong>
+            <span>{module.badge}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+    <aside class="panel comparative-overview">
+      <h2>使用方式</h2>
+      <ul class="comparative-plain-list">
+        <li>先用模块导引定位主题，再直接提取文献、规则、机构和案例材料。</li>
+        <li>基础理论模块更适合写总论、概念辨析和方法部分。</li>
+        <li>域外经验模块更适合写制度比较、机制总结和可移植性评估。</li>
+        <li>后续如需再细化，可以继续把每一条扩成单独的法源、成果或案例页面。</li>
+      </ul>
+    </aside>
+  </section>
+
+  <section class="section comparative-tools">
+    <div class="page-header comparative-section-header">
+      <span class="mini-type">方法矩阵</span>
+      <h2>制度工具矩阵</h2>
+      <p>
+        这一层把不同国家和国际组织的经验转化成可复用的制度工具，便于在大湾区语境下判断哪些技术可以直接借鉴，哪些只能作为参照。
+      </p>
+    </div>
+    <div class="grid cards">
+      {COMPARATIVE_LAW_TOOL_MATRIX.map((tool) => (
+        <article class="panel comparative-tool-card">
+          <h3>{tool.tool}</h3>
+          <p>{tool.whatItDoes}</p>
+          <div class="comparative-chip-list" aria-label={`${tool.tool}代表样本`}>
+            {tool.examples.map((example) => <span>{example}</span>)}
+          </div>
+          <p><strong>大湾区用法：</strong>{tool.gbaUse}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  {COMPARATIVE_LAW_MODULES.map((module) => (
+    <section class="section comparative-module" id={module.id}>
+      <div class="page-header comparative-module-header">
+        <span class="mini-type">{module.badge}</span>
+        <h2>{module.title}</h2>
+        <p>{module.summary}</p>
+        <ul class="comparative-tag-list" aria-label={`${module.title}方法标签`}>
+          {module.methodTags.map((tag) => <li>{tag}</li>)}
+        </ul>
+        <ul class="comparative-question-list">
+          {module.keyQuestions.map((question) => <li>{question}</li>)}
+        </ul>
+        <p><strong>对大湾区研究的启发：</strong>{module.relevance}</p>
+      </div>
+
+      <div class="grid cards">
+        <article class="panel comparative-detail-card">
+          <h3>可借鉴要点</h3>
+          <ul class="comparative-plain-list">
+            {module.takeaways.map((takeaway) => <li>{takeaway}</li>)}
+          </ul>
+        </article>
+
+        <article class="panel comparative-detail-card">
+          <h3>代表文献</h3>
+          <ul class="comparative-detail-list">
+            {module.literature.map((entry) => (
+              <li>
+                <strong>{entry.title}</strong>
+                <span>{entry.meta}</span>
+                <p>{entry.note}</p>
+                <a class="comparative-source-link" href={entry.sourceHref} target="_blank" rel="noreferrer">
+                  {entry.sourceLabel}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article class="panel comparative-detail-card">
+          <h3>制度与规则</h3>
+          <ul class="comparative-detail-list">
+            {module.rules.map((entry) => (
+              <li>
+                <strong>{entry.title}</strong>
+                <span>{entry.meta}</span>
+                <p>{entry.note}</p>
+                <a class="comparative-source-link" href={entry.sourceHref} target="_blank" rel="noreferrer">
+                  {entry.sourceLabel}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article class="panel comparative-detail-card">
+          <h3>关键机构</h3>
+          <ul class="comparative-detail-list">
+            {module.institutions.map((entry) => (
+              <li>
+                <strong>{entry.title}</strong>
+                <span>{entry.meta}</span>
+                <p>{entry.note}</p>
+                <a class="comparative-source-link" href={entry.sourceHref} target="_blank" rel="noreferrer">
+                  {entry.sourceLabel}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article class="panel comparative-detail-card">
+          <h3>典型案例/样本</h3>
+          <ul class="comparative-detail-list">
+            {module.cases.map((entry) => (
+              <li>
+                <strong>{entry.title}</strong>
+                <span>{entry.meta}</span>
+                <p>{entry.note}</p>
+                <a class="comparative-source-link" href={entry.sourceHref} target="_blank" rel="noreferrer">
+                  {entry.sourceLabel}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article class="panel comparative-detail-card">
+          <h3>联网资料</h3>
+          <ul class="comparative-detail-list">
+            {module.webSources.map((entry) => (
+              <li>
+                <span>{entry.type}</span>
+                <strong>
+                  <a href={entry.href} target="_blank" rel="noreferrer">
+                    {entry.title}
+                  </a>
+                </strong>
+                <p>{entry.note}</p>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article class="panel comparative-detail-card">
+          <h3>研究抓手</h3>
+          <ul class="comparative-plain-list">
+            {module.researchTracks.map((track) => <li>{track}</li>)}
+          </ul>
+        </article>
+      </div>
+    </section>
+  ))}
+</BaseLayout>
