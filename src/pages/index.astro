@@ -4,6 +4,7 @@ import EntryCard from "../components/EntryCard.astro";
 import MetricCard from "../components/MetricCard.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { byUpdatedDesc } from "../lib/content";
+import { withBase } from "../lib/paths";
 
 const topics = (await getCollection("topics")).sort(byUpdatedDesc);
 const sources = (await getCollection("sources")).sort(byUpdatedDesc);
@@ -21,40 +22,40 @@ const sourceCategoryStats = Object.entries(
 const thickeningTracks = [
   {
     label: "规则软联通",
-    href: "/topics/standards-certification-market-access/",
+    href: withBase("/topics/standards-certification-market-access/"),
     note: "湾区标准、湾区认证、检测认证和市场准入"
   },
   {
     label: "民生通办",
-    href: "/topics/cross-border-public-services/",
+    href: withBase("/topics/cross-border-public-services/"),
     note: "粤港、粤澳政务服务跨境通办和数字身份接口"
   },
   {
     label: "科创要素",
-    href: "/topics/innovation-research-funding/",
+    href: withBase("/topics/innovation-research-funding/"),
     note: "科研资金、数据、物资和平台试点"
   },
   {
     label: "交通通关",
-    href: "/topics/transport-customs-mobility/",
+    href: withBase("/topics/transport-customs-mobility/"),
     note: "车辆北上、合作查验和跨境物流便利化"
   }
 ];
 
 const directoryCards = [
-  { href: "/topics/", label: "专题研究", count: topics.length, note: "研究框架与问题清单" },
-  { href: "/sources/", label: "政策与法源", count: sources.length, note: "文件、规范、司法与实务材料" },
-  { href: "/cases/", label: "典型案例", count: cases.length, note: "可复核、可引用的案例单元" },
-  { href: "/comparisons/", label: "规则对照", count: comparisons.length, note: "三法域条文与机制差异" },
-  { href: "/outputs/", label: "研究成果", count: outputs.length, note: "智库报告、学术文献、媒体与博客评论" }
+  { href: withBase("/topics/"), label: "专题研究", count: topics.length, note: "研究框架与问题清单" },
+  { href: withBase("/sources/"), label: "政策与法源", count: sources.length, note: "文件、规范、司法与实务材料" },
+  { href: withBase("/cases/"), label: "典型案例", count: cases.length, note: "可复核、可引用的案例单元" },
+  { href: withBase("/comparisons/"), label: "规则对照", count: comparisons.length, note: "三法域条文与机制差异" },
+  { href: withBase("/outputs/"), label: "研究成果", count: outputs.length, note: "智库报告、学术文献、媒体与博客评论" }
 ];
 
 const allMaterials = [
-  ...topics.map((entry) => ({ kind: "专题", title: entry.data.title, href: `/topics/${entry.id}/`, updated: entry.data.updated, summary: entry.data.summary, tags: entry.data.tags })),
-  ...sources.map((entry) => ({ kind: "法源", title: entry.data.title, href: `/sources/${entry.id}/`, updated: entry.data.updated, summary: entry.data.summary, tags: [entry.data.sourceCategory, entry.data.issuer, entry.data.materialType] })),
-  ...cases.map((entry) => ({ kind: "案例", title: entry.data.title, href: `/cases/${entry.id}/`, updated: entry.data.updated, summary: entry.data.innovation, tags: entry.data.mechanisms })),
-  ...comparisons.map((entry) => ({ kind: "对照", title: entry.data.title, href: `/comparisons/${entry.id}/`, updated: entry.data.updated, summary: entry.data.keyQuestions.join("；"), tags: entry.data.mechanisms })),
-  ...outputs.map((entry) => ({ kind: "研究成果", title: entry.data.title, href: `/outputs/${entry.id}/`, updated: entry.data.updated, summary: entry.data.summary, tags: entry.data.keywords }))
+  ...topics.map((entry) => ({ kind: "专题", title: entry.data.title, href: withBase(`/topics/${entry.id}/`), updated: entry.data.updated, summary: entry.data.summary, tags: entry.data.tags })),
+  ...sources.map((entry) => ({ kind: "法源", title: entry.data.title, href: withBase(`/sources/${entry.id}/`), updated: entry.data.updated, summary: entry.data.summary, tags: [entry.data.sourceCategory, entry.data.issuer, entry.data.materialType] })),
+  ...cases.map((entry) => ({ kind: "案例", title: entry.data.title, href: withBase(`/cases/${entry.id}/`), updated: entry.data.updated, summary: entry.data.innovation, tags: entry.data.mechanisms })),
+  ...comparisons.map((entry) => ({ kind: "对照", title: entry.data.title, href: withBase(`/comparisons/${entry.id}/`), updated: entry.data.updated, summary: entry.data.keyQuestions.join("；"), tags: entry.data.mechanisms })),
+  ...outputs.map((entry) => ({ kind: "研究成果", title: entry.data.title, href: withBase(`/outputs/${entry.id}/`), updated: entry.data.updated, summary: entry.data.summary, tags: entry.data.keywords }))
 ].sort((a, b) => b.updated.getTime() - a.updated.getTime()).slice(0, 8);
 
 const latestUpdated = allMaterials.slice(0, 8);
@@ -154,7 +155,7 @@ const latestUpdated = allMaterials.slice(0, 8);
       <h2>近期资料</h2>
       <ul>
         {sources.slice(0, 5).map((entry) => (
-          <li><a href={`/sources/${entry.id}/`}>{entry.data.title}</a></li>
+          <li><a href={withBase(`/sources/${entry.id}/`)}>{entry.data.title}</a></li>
         ))}
       </ul>
     </aside>

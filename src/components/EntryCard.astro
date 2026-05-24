@@ -1,4 +1,5 @@
 ---
+import { withBase } from "../lib/paths";
 import MetaList from "./MetaList.astro";
 import StatusPill from "./StatusPill.astro";
 
@@ -13,12 +14,13 @@ interface Props {
 }
 
 const { href, title, summary, meta = [], status, visibility, titleLinks = [] } = Astro.props;
+const cardHref = href.startsWith("/") ? withBase(href) : href;
 ---
 
 <article class="panel entry-card">
   <div>
     <h3 class="entry-card-title">
-      <a href={href}>{title}</a>
+      <a href={cardHref}>{title}</a>
       {titleLinks.map((link) => (
         <a href={link.href} target="_blank" rel="noopener noreferrer" class="title-inline-link">{link.label}</a>
       ))}

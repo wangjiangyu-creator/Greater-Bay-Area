@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { withBase } from "../lib/paths";
 
 interface Props {
   title: string;
@@ -22,17 +23,17 @@ const pageTitle = `${title} | 粤港澳大湾区法制一体化研究门户`;
     <div class="site-shell">
       <header class="topbar">
         <div class="topbar-inner">
-          <a class="brand" href="/">
+          <a class="brand" href={withBase("/")}>
             <strong>大湾区法制一体化研究</strong>
             <span>规则衔接 · 机制对接</span>
           </a>
           <nav class="nav" aria-label="主导航">
-            <a href="/topics/">专题</a>
-            <a href="/sources/">法源</a>
-            <a href="/cases/">案例</a>
-            <a href="/comparisons/">对照</a>
-            <a href="/outputs/">研究成果</a>
-            <a href="/search/">检索</a>
+            <a href={withBase("/topics/")}>专题</a>
+            <a href={withBase("/sources/")}>法源</a>
+            <a href={withBase("/cases/")}>案例</a>
+            <a href={withBase("/comparisons/")}>对照</a>
+            <a href={withBase("/outputs/")}>研究成果</a>
+            <a href={withBase("/search/")}>检索</a>
           </nav>
         </div>
       </header>

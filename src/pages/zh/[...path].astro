@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import { withBase } from "../../lib/paths";
 
 export async function getStaticPaths() {
   const [topics, sources, cases, comparisons, outputs] = await Promise.all([
@@ -31,5 +32,5 @@ export async function getStaticPaths() {
 const rawPath = Astro.params.path;
 const targetPath = typeof rawPath === "string" ? rawPath : "";
 const target = targetPath ? `/${targetPath}/` : "/";
-return Astro.redirect(target);
+return Astro.redirect(withBase(target));
 ---

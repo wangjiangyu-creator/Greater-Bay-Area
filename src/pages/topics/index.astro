@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import EntryCard from "../../components/EntryCard.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { byUpdatedDesc, countByStatus, uniqueSorted } from "../../lib/content";
+import { withBase } from "../../lib/paths";
 
 const entries = (await getCollection("topics")).sort(byUpdatedDesc);
 const statusStats = countByStatus(entries);
@@ -58,7 +59,7 @@ const entriesById = new Map(entries.map((entry) => [entry.id, entry]));
           <ul>
             {group.links.map((slug) => {
               const entry = entriesById.get(slug);
-              return entry ? <li><a href={`/topics/${entry.id}/`}>{entry.data.title}</a></li> : null;
+              return entry ? <li><a href={withBase(`/topics/${entry.id}/`)}>{entry.data.title}</a></li> : null;
             })}
           </ul>
         </article>
