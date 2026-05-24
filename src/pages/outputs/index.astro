@@ -2,20 +2,214 @@
 import { getCollection } from "astro:content";
 import EntryCard from "../../components/EntryCard.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { byUpdatedDesc } from "../../lib/content";
+import { byUpdatedDesc, countByStatus, uniqueSorted } from "../../lib/content";
+
+type OutputCategory = "智库报告" | "学术文献" | "媒体或博客评论" | "其他成果";
+
+type OutputTypeCategoryMap = {
+  "智库报告": string[];
+  "学术文献": string[];
+  "媒体或博客评论": string[];
+  "其他成果": string[];
+};
+
+type OutputExternalLink = {
+  label: string;
+  href: string;
+};
+
+const outputCategoryBuckets: OutputTypeCategoryMap = {
+  "智库报告": ["智库报告"],
+  "学术文献": ["专著", "书章", "期刊文章", "专题论文", "工作论文", "文献综述", "专题书目"],
+  "媒体或博客评论": ["媒体评论", "博客评论"],
+  "其他成果": ["深度研究总报告", "政策简报", "会议纪要", "访谈摘要"]
+};
+
+const normalizeOutputCategory = (outputType: string): OutputCategory => {
+  if (outputCategoryBuckets["智库报告"].includes(outputType)) {
+    return "智库报告";
+  }
+  if (outputCategoryBuckets["学术文献"].includes(outputType)) {
+    return "学术文献";
+  }
+  if (outputCategoryBuckets["媒体或博客评论"].includes(outputType)) {
+    return "媒体或博客评论";
+  }
+  return "其他成果";
+};
 
 const entries = (await getCollection("outputs")).sort(byUpdatedDesc);
+const statusStats = countByStatus(entries);
+const statusOptions = uniqueSorted(entries.map((entry) => entry.data.status));
+const visibilityOptions = uniqueSorted(entries.map((entry) => entry.data.visibility));
+const outputTypeOptions = uniqueSorted(entries.map((entry) => entry.data.outputType));
+const languageOptions = uniqueSorted(entries.map((entry) => entry.data.language).filter(Boolean) as string[]);
+const outputCategoryOptions = uniqueSorted(entries.map((entry) => normalizeOutputCategory(entry.data.outputType)));
+const itemCount = entries.length;
+
+const getDefaultOriginalLabel = (language?: string) => {
+  if (language === "中文") return "原文（中文）";
+  if (language === "英文") return "原文（英文）";
+  return "原文";
+};
+
+const getOutputOriginalLinks = (entry: (typeof entries)[number]): OutputExternalLink[] => {
+  if (entry.data.originalLinks.length > 0) {
+    return entry.data.originalLinks.map((link) => ({ label: link.label, href: link.url }));
+  }
+
+  return [{ label: getDefaultOriginalLabel(entry.data.language), href: entry.data.downloadUrl }];
+};
+
+const makeSearchFallback = (title: string) =>
+  `https://duckduckgo.com/?q=${encodeURIComponent(`${title} 粤港澳法治 一体化 官方文档`)}`;
+
+const getOutputExternalLinks = (entry: (typeof entries)[number]): OutputExternalLink[] => {
+  const links = getOutputOriginalLinks(entry);
+
+  if (links.length === 0) {
+    return [{ label: "外部检索", href: makeSearchFallback(entry.data.title) }];
+  }
+
+  return links;
+};
 ---
 
 <BaseLayout title="研究成果">
   <section class="page-header">
-    <span class="eyebrow">成果</span>
+    <span class="eyebrow">研究成果</span>
     <h1>研究成果</h1>
-    <p class="lede">集中管理总报告、专题论文、政策简报、会议纪要、访谈摘要、文献综述和书目。</p>
+    <p class="lede">集中管理智库报告、学术文献（专著/书章/期刊文章）与媒体或博客评论，并收录中英文成果。</p>
   </section>
-  <div class="grid cards">
-    {entries.map((entry) => (
-      <EntryCard href={`/outputs/${entry.id}/`} title={entry.data.title} summary={entry.data.summary} meta={[entry.data.outputType, `版本 ${entry.data.version}`]} status={entry.data.status} visibility={entry.data.visibility} />
-    ))}
+  <section class="panel">
+    <h2>研究成果状态分布</h2>
+    <div class="status-stats">
+      {Object.entries(statusStats).map(([status, count]) => (
+        <p><strong>{count}</strong>{status}</p>
+      ))}
+    </div>
+  </section>
+  <section class="list-toolbar panel">
+    <input id="output-query" type="search" placeholder="关键词（标题/摘要）" aria-label="关键词检索" />
+    <select id="output-status" aria-label="状态筛选">
+      <option value="">全部状态</option>
+      {statusOptions.map((status) => <option value={status}>{status}</option>)}
+    </select>
+    <select id="output-visibility" aria-label="公开性筛选">
+      <option value="">全部公开性</option>
+      {visibilityOptions.map((visibility) => <option value={visibility}>{visibility}</option>)}
+    </select>
+    <select id="output-type" aria-label="研究成果类型筛选">
+      <option value="">全部类型</option>
+      {outputTypeOptions.map((outputType) => <option value={outputType}>{outputType}</option>)}
+    </select>
+    <select id="output-category" aria-label="研究成果分类筛选">
+      <option value="">全部分类</option>
+      {outputCategoryOptions.map((outputCategory) => <option value={outputCategory}>{outputCategory}</option>)}
+    </select>
+    <select id="output-language" aria-label="语言筛选">
+      <option value="">全部语言</option>
+      {languageOptions.map((language) => <option value={language}>{language}</option>)}
+    </select>
+    <span id="output-count" class="result-count">共 {itemCount} 条</span>
+  </section>
+  <div class="grid cards" id="output-grid">
+    {entries.map((entry) => {
+      const titleLinks = getOutputOriginalLinks(entry);
+      const externalLinks = getOutputExternalLinks(entry);
+
+      return (
+      <div
+        class="filter-item"
+        data-title={entry.data.title}
+        data-summary={entry.data.summary}
+        data-status={entry.data.status}
+        data-visibility={entry.data.visibility}
+        data-output-type={entry.data.outputType}
+        data-output-category={normalizeOutputCategory(entry.data.outputType)}
+        data-language={entry.data.language || ""}
+      >
+        <EntryCard
+          href={`/outputs/${entry.id}/`}
+          title={entry.data.title}
+          titleLinks={titleLinks}
+          summary={entry.data.summary}
+          meta={[
+            entry.data.outputType,
+            `研究成果分类：${normalizeOutputCategory(entry.data.outputType)}`,
+            `作者：${entry.data.authors.join("；")}`,
+            `出版者：${entry.data.publisher}`,
+            `出版年份：${entry.data.publicationYear}`,
+            `版本 ${entry.data.version}`,
+            entry.data.language ? `语言：${entry.data.language}` : ""
+          ].filter(Boolean) as string[]}
+          status={entry.data.status}
+          visibility={entry.data.visibility}
+        />
+        <div class="output-link-row">
+          {externalLinks.map((link) => (
+            <div class="output-link-cluster">
+              <a href={link.href} target="_blank" rel="noopener noreferrer" class="button-link" title={link.href}>{link.label}</a>
+              <a href={link.href} target="_blank" rel="noopener noreferrer" class="output-url-inline" title={link.href}>URL：{link.href}</a>
+            </div>
+          ))}
+        </div>
+      </div>
+      );
+    })}
   </div>
+  <script>
+    const queryInput = document.getElementById("output-query") as HTMLInputElement | null;
+    const statusSelect = document.getElementById("output-status") as HTMLSelectElement | null;
+    const visibilitySelect = document.getElementById("output-visibility") as HTMLSelectElement | null;
+    const outputTypeSelect = document.getElementById("output-type") as HTMLSelectElement | null;
+    const outputCategorySelect = document.getElementById("output-category") as HTMLSelectElement | null;
+    const outputLanguageSelect = document.getElementById("output-language") as HTMLSelectElement | null;
+    const countHint = document.getElementById("output-count") as HTMLElement | null;
+    const items = Array.from(document.querySelectorAll<HTMLElement>("#output-grid .filter-item"));
+
+    function renderOutputList() {
+      const q = (queryInput && queryInput.value.trim().toLowerCase()) || "";
+      const status = statusSelect ? statusSelect.value : "";
+      const visibility = visibilitySelect ? visibilitySelect.value : "";
+      const outputType = outputTypeSelect ? outputTypeSelect.value : "";
+      const outputCategory = outputCategorySelect ? outputCategorySelect.value : "";
+      const outputLanguage = outputLanguageSelect ? outputLanguageSelect.value : "";
+
+      let visible = 0;
+      for (const item of items) {
+        const title = (item.dataset.title || "").toLowerCase();
+        const summary = (item.dataset.summary || "").toLowerCase();
+        const itemStatus = item.dataset.status || "";
+        const itemVisibility = item.dataset.visibility || "";
+        const itemOutputType = item.dataset.outputType || "";
+        const itemOutputCategory = item.dataset.outputCategory || "";
+        const itemLanguage = item.dataset.language || "";
+
+        const show =
+          (!q || title.includes(q) || summary.includes(q)) &&
+          (!status || itemStatus === status) &&
+          (!visibility || itemVisibility === visibility) &&
+          (!outputType || itemOutputType === outputType) &&
+          (!outputCategory || itemOutputCategory === outputCategory) &&
+          (!outputLanguage || itemLanguage === outputLanguage);
+
+        if (show) {
+          item.classList.remove("is-hidden");
+          visible += 1;
+        } else {
+          item.classList.add("is-hidden");
+        }
+      }
+      if (countHint) countHint.textContent = `共 ${visible} 条`;
+    }
+
+    queryInput?.addEventListener("input", renderOutputList);
+    statusSelect?.addEventListener("change", renderOutputList);
+    visibilitySelect?.addEventListener("change", renderOutputList);
+    outputTypeSelect?.addEventListener("change", renderOutputList);
+    outputCategorySelect?.addEventListener("change", renderOutputList);
+    outputLanguageSelect?.addEventListener("change", renderOutputList);
+    renderOutputList();
+  </script>
 </BaseLayout>

@@ -16,14 +16,17 @@ type SearchItemData = {
   tags: string[];
   status: string;
   visibility: string;
+  language?: string;
 };
+
+const outputLanguageOptions = Array.from(new Set(outputs.map((entry) => entry.data.language).filter(Boolean) as string[])).sort();
 
 const searchItems: SearchItemData[] = ([] as SearchItemData[])
   .concat(topics.map((entry) => ({ type: "专题", title: entry.data.title, summary: entry.data.summary, href: `/topics/${entry.id}/`, tags: entry.data.tags, status: entry.data.status, visibility: entry.data.visibility })))
   .concat(sources.map((entry) => ({ type: "法源", title: entry.data.title, summary: entry.data.summary, href: `/sources/${entry.id}/`, tags: [entry.data.issuer, entry.data.citation].concat(entry.data.tags), status: entry.data.status, visibility: entry.data.visibility })))
   .concat(cases.map((entry) => ({ type: "案例", title: entry.data.title, summary: entry.data.innovation, href: `/cases/${entry.id}/`, tags: [entry.data.legalBasis, entry.data.effect].concat(entry.data.mechanisms), status: entry.data.status, visibility: entry.data.visibility })))
   .concat(comparisons.map((entry) => ({ type: "对照", title: entry.data.title, summary: entry.data.keyQuestions.join("；"), href: `/comparisons/${entry.id}/`, tags: entry.data.mechanisms, status: entry.data.status, visibility: entry.data.visibility })))
-  .concat(outputs.map((entry) => ({ type: "成果", title: entry.data.title, summary: entry.data.summary, href: `/outputs/${entry.id}/`, tags: entry.data.authors.concat(entry.data.keywords), status: entry.data.status, visibility: entry.data.visibility })));
+  .concat(outputs.map((entry) => ({ type: "研究成果", title: entry.data.title, summary: entry.data.summary, href: `/outputs/${entry.id}/`, tags: entry.data.authors.concat(entry.data.keywords), status: entry.data.status, visibility: entry.data.visibility, language: entry.data.language })));
 
 const serializedSearchItems = JSON.stringify(searchItems).replaceAll("<", "\\u003c");
 ---
@@ -44,7 +47,11 @@ const serializedSearchItems = JSON.stringify(searchItems).replaceAll("<", "\\u00
         <option value="法源">法源</option>
         <option value="案例">案例</option>
         <option value="对照">对照</option>
-        <option value="成果">成果</option>
+        <option value="研究成果">研究成果</option>
+      </select>
+      <select id="output-language" aria-label="研究成果语言">
+        <option value="">全部语言</option>
+        {outputLanguageOptions.map((language) => <option value={language}>{language}</option>)}
       </select>
     </div>
     <div id="results" class="grid cards"></div>
@@ -60,10 +67,12 @@ const serializedSearchItems = JSON.stringify(searchItems).replaceAll("<", "\\u00
       tags?: string[];
       status: string;
       visibility: string;
+      language?: string;
     };
 
     const input = document.querySelector<HTMLInputElement>("#q");
     const select = document.querySelector<HTMLSelectElement>("#type");
+    const languageSelect = document.querySelector<HTMLSelectElement>("#output-language");
     const results = document.querySelector<HTMLElement>("#results");
     const dataElement = document.querySelector("#search-data");
     const data = JSON.parse(dataElement?.textContent || "[]") as SearchItem[];
@@ -74,14 +83,27 @@ const serializedSearchItems = JSON.stringify(searchItems).replaceAll("<", "\\u00
 
     const inputElement = input;
     const selectElement = select;
+    const languageSelectElement = languageSelect;
     const resultsElement = results;
+
+    function syncLanguageControl() {
+      if (!languageSelectElement) return;
+      const isResearchOutput = selectElement.value === "研究成果";
+      languageSelectElement.disabled = !isResearchOutput;
+      if (!isResearchOutput) {
+        languageSelectElement.value = "";
+      }
+    }
 
     function render() {
       const query = inputElement.value.trim().toLowerCase();
       const type = selectElement.value;
+      const language = languageSelectElement ? languageSelectElement.value : "";
       const filtered = data.filter((item) => {
+        const isResearchOutput = item.type === "研究成果";
         const haystack = [item.type, item.title, item.summary, item.status, item.visibility].concat(item.tags || []).join(" ").toLowerCase();
-        return (!type || item.type === type) && (!query || haystack.includes(query));
+        const passesLanguage = !language || !isResearchOutput || item.language === language;
+        return (!type || item.type === type) && passesLanguage && (!query || haystack.includes(query));
       });
 
       resultsElement.replaceChildren(
@@ -109,6 +131,11 @@ const serializedSearchItems = JSON.stringify(searchItems).replaceAll("<", "\\u00
           const visibilityItem = document.createElement("li");
           visibilityItem.textContent = item.visibility;
           meta.append(typeItem, statusItem, visibilityItem);
+          if (item.language) {
+            const languageItem = document.createElement("li");
+            languageItem.textContent = item.language;
+            meta.append(languageItem);
+          }
 
           article.append(body, meta);
           return article;
@@ -116,8 +143,13 @@ const serializedSearchItems = JSON.stringify(searchItems).replaceAll("<", "\\u00
       );
     }
 
+    syncLanguageControl();
     inputElement.addEventListener("input", render);
-    selectElement.addEventListener("change", render);
+    selectElement.addEventListener("change", () => {
+      syncLanguageControl();
+      render();
+    });
+    languageSelectElement?.addEventListener("change", render);
     render();
   </script>
 </BaseLayout>

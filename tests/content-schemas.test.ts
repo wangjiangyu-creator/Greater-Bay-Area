@@ -119,6 +119,13 @@ describe("content schemas", () => {
         status: "提纲中",
         visibility: "内部",
         version: "0.1",
+        originalLinks: [
+          {
+            label: "原文",
+            url: "https://example.org/report"
+          }
+        ],
+        downloadUrl: "https://example.org/report.pdf",
         updated: "2026-05-23"
       }).version
     ).toBe("0.1");

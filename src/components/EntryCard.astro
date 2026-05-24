@@ -9,14 +9,20 @@ interface Props {
   meta?: string[];
   status?: string;
   visibility?: string;
+  titleLinks?: { label: string; href: string }[];
 }
 
-const { href, title, summary, meta = [], status, visibility } = Astro.props;
+const { href, title, summary, meta = [], status, visibility, titleLinks = [] } = Astro.props;
 ---
 
 <article class="panel entry-card">
   <div>
-    <h3><a href={href}>{title}</a></h3>
+    <h3 class="entry-card-title">
+      <a href={href}>{title}</a>
+      {titleLinks.map((link) => (
+        <a href={link.href} target="_blank" rel="noopener noreferrer" class="title-inline-link">{link.label}</a>
+      ))}
+    </h3>
     <p>{summary}</p>
   </div>
   {meta.length > 0 && <MetaList items={meta} />}

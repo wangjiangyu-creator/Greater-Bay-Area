@@ -10,6 +10,33 @@ const failures = [];
 const expectedCollections = ["topics", "sources", "cases", "comparisons", "outputs"];
 const idsByCollection = new Map(expectedCollections.map((collection) => [collection, new Set()]));
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const taxonomyFile = path.join(root, "src/lib/taxonomy.ts");
+const taxonomySource = fs.readFileSync(taxonomyFile, "utf8");
+
+function extractConstArray(name) {
+  const match = taxonomySource.match(new RegExp(`export const ${name} = \\[(.*?)\\] as const;`, "s"));
+  if (!match) {
+    throw new Error(`Unable to locate taxonomy array "${name}" in src/lib/taxonomy.ts`);
+  }
+
+  return Array.from(match[1].matchAll(/"([^"]+)"/g), (item) => item[1]);
+}
+
+const REGIONS = new Set(extractConstArray("REGIONS"));
+const MECHANISMS = new Set(extractConstArray("MECHANISMS"));
+const MATERIAL_TYPES = new Set(extractConstArray("MATERIAL_TYPES"));
+const SOURCE_CATEGORIES = new Set(extractConstArray("SOURCE_CATEGORIES"));
+const STATUS_VALUES = new Set(extractConstArray("STATUS_VALUES"));
+const VISIBILITY_VALUES = new Set(extractConstArray("VISIBILITY_VALUES"));
+const OUTPUT_STATUS_VALUES = new Set([
+  "选题中",
+  "资料收集中",
+  "提纲中",
+  "初稿中",
+  "修改中",
+  "已定稿",
+  "已发表或已提交"
+]);
 
 function collectionFor(file) {
   return file.split("/")[2];
@@ -43,6 +70,27 @@ function requireStringArrayField(file, data, field) {
   });
 
   return validValues;
+}
+
+function requireEnumField(file, data, field, allowedValues) {
+  const value = data[field];
+  if (typeof value !== "string" || value.trim() === "") {
+    failures.push(`${file}: missing ${field}`);
+    return;
+  }
+
+  if (!allowedValues.has(value)) {
+    failures.push(`${file}: invalid ${field} value "${value}"`);
+  }
+}
+
+function requireEnumArrayField(file, data, field, allowedValues) {
+  const values = requireStringArrayField(file, data, field);
+  values.forEach((value) => {
+    if (!allowedValues.has(value)) {
+      failures.push(`${file}: invalid ${field} value "${value}"`);
+    }
+  });
 }
 
 function requireReferences(file, data, field, collection) {
@@ -84,33 +132,47 @@ for (const file of files) {
   requireField(file, data, "status");
   requireField(file, data, "visibility");
   requireField(file, data, "updated");
+  requireEnumField(file, data, "visibility", VISIBILITY_VALUES);
 
   if (file.includes("/sources/")) {
+    requireEnumField(file, data, "status", STATUS_VALUES);
     requireField(file, data, "originalUrl");
     requireField(file, data, "citation");
+    requireEnumArrayField(file, data, "regions", REGIONS);
     requireReferences(file, data, "topics", "topics");
+    requireEnumField(file, data, "materialType", MATERIAL_TYPES);
+    requireEnumField(file, data, "sourceCategory", SOURCE_CATEGORIES);
   }
 
   if (file.includes("/cases/")) {
+    requireEnumField(file, data, "status", STATUS_VALUES);
     requireField(file, data, "sourceUrl");
     requireField(file, data, "legalBasis");
     requireStringArrayField(file, data, "paperAngles");
+    requireEnumArrayField(file, data, "regions", REGIONS);
     requireReferences(file, data, "topics", "topics");
     requireReferences(file, data, "relatedSources", "sources");
+    requireEnumArrayField(file, data, "mechanisms", MECHANISMS);
   }
 
   if (file.includes("/topics/")) {
+    requireEnumField(file, data, "status", STATUS_VALUES);
     requireField(file, data, "summary");
-    requireStringArrayField(file, data, "mechanisms");
+    requireEnumArrayField(file, data, "regions", REGIONS);
+    requireEnumArrayField(file, data, "mechanisms", MECHANISMS);
   }
 
   if (file.includes("/comparisons/")) {
+    requireEnumField(file, data, "status", STATUS_VALUES);
     requireStringArrayField(file, data, "keyQuestions");
+    requireEnumArrayField(file, data, "regions", REGIONS);
     requireReferences(file, data, "topics", "topics");
     requireReferences(file, data, "relatedSources", "sources");
+    requireEnumArrayField(file, data, "mechanisms", MECHANISMS);
   }
 
   if (file.includes("/outputs/")) {
+    requireEnumField(file, data, "status", OUTPUT_STATUS_VALUES);
     requireField(file, data, "outputType");
     requireStringArrayField(file, data, "authors");
     requireField(file, data, "summary");

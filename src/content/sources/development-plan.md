@@ -13,6 +13,7 @@ topics:
   - "finance-connect"
   - "professional-qualification"
 materialType: "政策规划"
+sourceCategory: "中央政策文件"
 tags:
   - "顶层规划"
   - "一国两制"

@@ -2,9 +2,15 @@
 import { getCollection } from "astro:content";
 import EntryCard from "../../components/EntryCard.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { byUpdatedDesc } from "../../lib/content";
+import { byUpdatedDesc, countByStatus, uniqueSorted } from "../../lib/content";
 
 const entries = (await getCollection("comparisons")).sort(byUpdatedDesc);
+const statusStats = countByStatus(entries);
+const statusOptions = uniqueSorted(entries.map((entry) => entry.data.status));
+const visibilityOptions = uniqueSorted(entries.map((entry) => entry.data.visibility));
+const regionOptions = uniqueSorted(entries.flatMap((entry) => entry.data.regions));
+const mechanismOptions = uniqueSorted(entries.flatMap((entry) => entry.data.mechanisms));
+const itemCount = entries.length;
 ---
 
 <BaseLayout title="三法域规则对照">
@@ -13,9 +19,96 @@ const entries = (await getCollection("comparisons")).sort(byUpdatedDesc);
     <h1>三法域规则对照</h1>
     <p class="lede">按专题比较内地、香港、澳门规则差异、现有机制和待核验问题。</p>
   </section>
-  <div class="grid cards">
+  <section class="panel">
+    <h2>对照状态分布</h2>
+    <div class="status-stats">
+      {Object.entries(statusStats).map(([status, count]) => (
+        <p><strong>{count}</strong>{status}</p>
+      ))}
+    </div>
+  </section>
+  <section class="list-toolbar panel">
+    <input id="comparison-query" type="search" placeholder="关键词（标题/问题）" aria-label="关键词检索" />
+    <select id="comparison-status" aria-label="状态筛选">
+      <option value="">全部状态</option>
+      {statusOptions.map((status) => <option value={status}>{status}</option>)}
+    </select>
+    <select id="comparison-visibility" aria-label="公开性筛选">
+      <option value="">全部公开性</option>
+      {visibilityOptions.map((visibility) => <option value={visibility}>{visibility}</option>)}
+    </select>
+    <select id="comparison-region" aria-label="适用区域筛选">
+      <option value="">全部区域</option>
+      {regionOptions.map((region) => <option value={region}>{region}</option>)}
+    </select>
+    <select id="comparison-mechanism" aria-label="机制筛选">
+      <option value="">全部机制</option>
+      {mechanismOptions.map((mechanism) => <option value={mechanism}>{mechanism}</option>)}
+    </select>
+    <span id="comparison-count" class="result-count">共 {itemCount} 条</span>
+  </section>
+  <div class="grid cards" id="comparison-grid">
     {entries.map((entry) => (
-      <EntryCard href={`/comparisons/${entry.id}/`} title={entry.data.title} summary={entry.data.keyQuestions.join("；")} meta={entry.data.mechanisms.slice(0, 3)} status={entry.data.status} visibility={entry.data.visibility} />
+      <div
+        class="filter-item"
+        data-title={entry.data.title}
+        data-summary={entry.data.keyQuestions.join("；")}
+        data-status={entry.data.status}
+        data-visibility={entry.data.visibility}
+        data-regions={entry.data.regions.join(",")}
+        data-mechanisms={entry.data.mechanisms.join(",")}
+      >
+        <EntryCard href={`/comparisons/${entry.id}/`} title={entry.data.title} summary={entry.data.keyQuestions.join("；")} meta={entry.data.mechanisms.slice(0, 3)} status={entry.data.status} visibility={entry.data.visibility} />
+      </div>
     ))}
   </div>
+  <script>
+    const queryInput = document.getElementById("comparison-query") as HTMLInputElement | null;
+    const statusSelect = document.getElementById("comparison-status") as HTMLSelectElement | null;
+    const visibilitySelect = document.getElementById("comparison-visibility") as HTMLSelectElement | null;
+    const regionSelect = document.getElementById("comparison-region") as HTMLSelectElement | null;
+    const mechanismSelect = document.getElementById("comparison-mechanism") as HTMLSelectElement | null;
+    const countHint = document.getElementById("comparison-count") as HTMLElement | null;
+    const items = Array.from(document.querySelectorAll<HTMLElement>("#comparison-grid .filter-item"));
+
+    function renderComparisonList() {
+      const q = (queryInput && queryInput.value.trim().toLowerCase()) || "";
+      const status = statusSelect ? statusSelect.value : "";
+      const visibility = visibilitySelect ? visibilitySelect.value : "";
+      const region = regionSelect ? regionSelect.value : "";
+      const mechanism = mechanismSelect ? mechanismSelect.value : "";
+
+      let visible = 0;
+      for (const item of items) {
+        const title = (item.dataset.title || "").toLowerCase();
+        const summary = (item.dataset.summary || "").toLowerCase();
+        const itemStatus = item.dataset.status || "";
+        const itemVisibility = item.dataset.visibility || "";
+        const itemRegions = (item.dataset.regions || "").split(",").filter(Boolean);
+        const itemMechanisms = (item.dataset.mechanisms || "").split(",").filter(Boolean);
+
+        const show =
+          (!q || title.includes(q) || summary.includes(q)) &&
+          (!status || itemStatus === status) &&
+          (!visibility || itemVisibility === visibility) &&
+          (!region || itemRegions.includes(region)) &&
+          (!mechanism || itemMechanisms.includes(mechanism));
+
+        if (show) {
+          item.classList.remove("is-hidden");
+          visible += 1;
+        } else {
+          item.classList.add("is-hidden");
+        }
+      }
+      if (countHint) countHint.textContent = `共 ${visible} 条`;
+    }
+
+    queryInput?.addEventListener("input", renderComparisonList);
+    statusSelect?.addEventListener("change", renderComparisonList);
+    visibilitySelect?.addEventListener("change", renderComparisonList);
+    regionSelect?.addEventListener("change", renderComparisonList);
+    mechanismSelect?.addEventListener("change", renderComparisonList);
+    renderComparisonList();
+  </script>
 </BaseLayout>

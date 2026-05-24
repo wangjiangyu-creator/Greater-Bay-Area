@@ -33,7 +33,8 @@ export const MECHANISMS = [
   "数据接口",
   "联合执法",
   "跨境支付与结算",
-  "争议解决协同"
+  "争议解决协同",
+  "名册治理"
 ] as const;
 
 export const MATERIAL_TYPES = [
@@ -46,10 +47,22 @@ export const MATERIAL_TYPES = [
   "司法文件",
   "监管规则",
   "合作协议",
+  "工作指引",
+  "名册",
+  "会议成果",
+  "新闻公告",
   "行业标准",
   "官方案例",
   "学术文献",
   "实务报告"
+] as const;
+
+export const SOURCE_CATEGORIES = [
+  "国家领导人讲话",
+  "中央政策文件",
+  "广东省地政策文件",
+  "广东省和地方的法规",
+  "香港政府和有关组织文件"
 ] as const;
 
 export const STATUS_VALUES = [
@@ -69,6 +82,7 @@ export const VISIBILITY_VALUES = ["公开", "评审", "内部"] as const;
 export type Region = (typeof REGIONS)[number];
 export type Mechanism = (typeof MECHANISMS)[number];
 export type MaterialType = (typeof MATERIAL_TYPES)[number];
+export type SourceCategory = (typeof SOURCE_CATEGORIES)[number];
 export type ResearchStatus = (typeof STATUS_VALUES)[number];
 export type Visibility = (typeof VISIBILITY_VALUES)[number];
 

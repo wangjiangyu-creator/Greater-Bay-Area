@@ -1,0 +1,35 @@
+---
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const [topics, sources, cases, comparisons, outputs] = await Promise.all([
+    getCollection("topics"),
+    getCollection("sources"),
+    getCollection("cases"),
+    getCollection("comparisons"),
+    getCollection("outputs")
+  ]);
+
+  const paths = [
+    undefined,
+    "topics",
+    "sources",
+    "cases",
+    "comparisons",
+    "outputs",
+    "search",
+    ...topics.map((entry) => `topics/${entry.id}`),
+    ...sources.map((entry) => `sources/${entry.id}`),
+    ...cases.map((entry) => `cases/${entry.id}`),
+    ...comparisons.map((entry) => `comparisons/${entry.id}`),
+    ...outputs.map((entry) => `outputs/${entry.id}`)
+  ];
+
+  return paths.map((path) => ({ params: { path } }));
+}
+
+const rawPath = Astro.params.path;
+const targetPath = typeof rawPath === "string" ? rawPath : "";
+const target = targetPath ? `/${targetPath}/` : "/";
+return Astro.redirect(target);
+---

@@ -14,8 +14,29 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const relatedTopics = (await getCollection("topics")).filter((topic) => entry.data.topics.includes(topic.id)).sort(byUpdatedDesc);
-const relatedSources = (await getCollection("sources")).filter((source) => entry.data.relatedSources.includes(source.id)).sort(byUpdatedDesc);
+const relatedSourceEntries = (await getCollection("sources")).filter((source) => entry.data.relatedSources.includes(source.id)).sort(byUpdatedDesc);
 const relatedCases = (await getCollection("cases")).filter((item) => entry.data.relatedCases.includes(item.id)).sort(byUpdatedDesc);
+
+const authorText = entry.data.authors.join("；");
+const publisherText = entry.data.publisher;
+const publicationYearText = entry.data.publicationYear;
+
+type OutputExternalLink = { label: string; href: string };
+
+const getDefaultOriginalLabel = (language?: string) => {
+  if (language === "中文") return "原文（中文）";
+  if (language === "英文") return "原文（英文）";
+  return "原文";
+};
+
+const externalLinks: OutputExternalLink[] = entry.data.originalLinks.length > 0
+  ? entry.data.originalLinks.map((link) => ({ label: link.label, href: link.url }))
+  : [{ label: getDefaultOriginalLabel(entry.data.language), href: entry.data.downloadUrl }];
+
+if (externalLinks.length === 0) {
+  externalLinks.push({ label: "原文", href: entry.data.downloadUrl });
+}
+
 const relatedGroups = [
   {
     title: "关联专题",
@@ -23,7 +44,7 @@ const relatedGroups = [
   },
   {
     title: "关联法源",
-    items: relatedSources.map((item) => ({ href: `/sources/${item.id}/`, title: item.data.title, meta: item.data.citation }))
+    items: relatedSourceEntries.map((item) => ({ href: `/sources/${item.id}/`, title: item.data.title, meta: item.data.citation }))
   },
   {
     title: "关联案例",
@@ -33,14 +54,43 @@ const relatedGroups = [
 ---
 
 <BaseLayout title={entry.data.title} description={entry.data.summary}>
-  <section class="page-header">
-    <span class="eyebrow">研究成果</span>
-    <h1>{entry.data.title}</h1>
-    <p class="lede">{entry.data.summary}</p>
-    <MetaList items={[entry.data.outputType, `版本 ${entry.data.version}`, displayDate(entry.data.updated)]} />
+<section class="page-header">
+  <span class="eyebrow">研究成果</span>
+  <h1 class="page-title-with-links">
+    <span>{entry.data.title}</span>
+    {externalLinks.map((link) => (
+      <a href={link.href} target="_blank" rel="noopener noreferrer" class="title-inline-link">{link.label}</a>
+    ))}
+  </h1>
+  <p class="lede">{entry.data.summary}</p>
+    <MetaList items={[entry.data.outputType, `版本 ${entry.data.version}`, entry.data.language ? `语言：${entry.data.language}` : "语言：中文", displayDate(entry.data.updated)]} />
+    <div class="output-citation-grid">
+      <p class="output-citation-note"><strong>作者</strong>：{authorText}</p>
+      <p class="output-citation-note"><strong>出版者</strong>：{publisherText}</p>
+      <p class="output-citation-note"><strong>出版年份</strong>：{publicationYearText}</p>
+      <p class="output-citation-note">
+        <strong>URL</strong>：
+        {externalLinks.map((link, index) => (
+          <>
+            {index > 0 ? "；" : ""}
+            <a href={link.href} target="_blank" rel="noopener noreferrer">{link.label}</a>
+            {"："}
+            {link.href}
+          </>
+        ))}
+      </p>
+    </div>
     <div class="card-statuses">
       <StatusPill value={entry.data.status} />
       <StatusPill value={entry.data.visibility} />
+    </div>
+  </section>
+  <section class="panel">
+    <h2>原文链接</h2>
+    <div class="output-action-links">
+      {externalLinks.map((link) => (
+        <a href={link.href} target="_blank" rel="noopener noreferrer" class="button-link">{link.label}</a>
+      ))}
     </div>
   </section>
   <article class="content-body">

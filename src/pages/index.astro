@@ -11,6 +11,53 @@ const cases = (await getCollection("cases")).sort(byUpdatedDesc);
 const comparisons = (await getCollection("comparisons")).sort(byUpdatedDesc);
 const outputs = (await getCollection("outputs")).sort(byUpdatedDesc);
 const firstPhaseTopics = topics.filter((entry) => entry.data.priority === "第一期");
+const sourceCategoryStats = Object.entries(
+  sources.reduce((acc, entry) => {
+    acc[entry.data.sourceCategory] = (acc[entry.data.sourceCategory] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>)
+).sort((a, b) => b[1] - a[1]);
+
+const thickeningTracks = [
+  {
+    label: "规则软联通",
+    href: "/topics/standards-certification-market-access/",
+    note: "湾区标准、湾区认证、检测认证和市场准入"
+  },
+  {
+    label: "民生通办",
+    href: "/topics/cross-border-public-services/",
+    note: "粤港、粤澳政务服务跨境通办和数字身份接口"
+  },
+  {
+    label: "科创要素",
+    href: "/topics/innovation-research-funding/",
+    note: "科研资金、数据、物资和平台试点"
+  },
+  {
+    label: "交通通关",
+    href: "/topics/transport-customs-mobility/",
+    note: "车辆北上、合作查验和跨境物流便利化"
+  }
+];
+
+const directoryCards = [
+  { href: "/topics/", label: "专题研究", count: topics.length, note: "研究框架与问题清单" },
+  { href: "/sources/", label: "政策与法源", count: sources.length, note: "文件、规范、司法与实务材料" },
+  { href: "/cases/", label: "典型案例", count: cases.length, note: "可复核、可引用的案例单元" },
+  { href: "/comparisons/", label: "规则对照", count: comparisons.length, note: "三法域条文与机制差异" },
+  { href: "/outputs/", label: "研究成果", count: outputs.length, note: "智库报告、学术文献、媒体与博客评论" }
+];
+
+const allMaterials = [
+  ...topics.map((entry) => ({ kind: "专题", title: entry.data.title, href: `/topics/${entry.id}/`, updated: entry.data.updated, summary: entry.data.summary, tags: entry.data.tags })),
+  ...sources.map((entry) => ({ kind: "法源", title: entry.data.title, href: `/sources/${entry.id}/`, updated: entry.data.updated, summary: entry.data.summary, tags: [entry.data.sourceCategory, entry.data.issuer, entry.data.materialType] })),
+  ...cases.map((entry) => ({ kind: "案例", title: entry.data.title, href: `/cases/${entry.id}/`, updated: entry.data.updated, summary: entry.data.innovation, tags: entry.data.mechanisms })),
+  ...comparisons.map((entry) => ({ kind: "对照", title: entry.data.title, href: `/comparisons/${entry.id}/`, updated: entry.data.updated, summary: entry.data.keyQuestions.join("；"), tags: entry.data.mechanisms })),
+  ...outputs.map((entry) => ({ kind: "研究成果", title: entry.data.title, href: `/outputs/${entry.id}/`, updated: entry.data.updated, summary: entry.data.summary, tags: entry.data.keywords }))
+].sort((a, b) => b.updated.getTime() - a.updated.getTime()).slice(0, 8);
+
+const latestUpdated = allMaterials.slice(0, 8);
 ---
 
 <BaseLayout title="研究总览">
@@ -26,6 +73,65 @@ const firstPhaseTopics = topics.filter((entry) => entry.data.priority === "第�
     <MetricCard label="典型案例" value={cases.length} />
     <MetricCard label="三法域对照" value={comparisons.length} />
     <MetricCard label="研究成果" value={outputs.length} />
+  </section>
+
+  <section class="section" aria-label="栏目入口">
+    <h2>栏目入口</h2>
+    <div class="grid cards">
+      {directoryCards.map((card) => (
+        <article class="panel mini-nav-card">
+          <a href={card.href}>
+            <h3>{card.label}</h3>
+          </a>
+          <strong>{card.count}</strong>
+          <p>{card.note}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section split">
+    <div>
+      <h2>厚实化研究路径</h2>
+      <div class="grid cards">
+        {thickeningTracks.map((track) => (
+          <article class="panel mini-nav-card">
+            <a href={track.href}>
+              <h3>{track.label}</h3>
+            </a>
+            <p>{track.note}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+    <aside class="panel">
+      <h2>法源结构</h2>
+      <ul>
+        {sourceCategoryStats.map(([category, count]) => (
+          <li><strong>{count}</strong> {category}</li>
+        ))}
+      </ul>
+    </aside>
+  </section>
+
+  <section class="section">
+    <h2>最新动态</h2>
+    <div class="content-body">
+      {latestUpdated.length === 0 ? (
+        <p>暂无新增内容。</p>
+      ) : (
+        <ul class="mini-list">
+          {latestUpdated.map((item) => (
+            <li>
+              <span class="mini-type">{item.kind}</span>
+              <a href={item.href}>{item.title}</a>
+              <p>{item.summary}</p>
+              <small>{item.updated.toISOString().slice(0, 10)}</small>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   </section>
 
   <section class="section split">
@@ -55,7 +161,7 @@ const firstPhaseTopics = topics.filter((entry) => entry.data.priority === "第�
   </section>
 
   <section class="section">
-    <h2>案例与成果</h2>
+    <h2>案例与研究成果</h2>
     <div class="grid cards">
       {cases.slice(0, 3).map((entry) => (
         <EntryCard

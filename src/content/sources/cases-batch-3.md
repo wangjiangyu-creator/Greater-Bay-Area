@@ -12,6 +12,7 @@ topics:
   - "professional-qualification"
   - "data-cross-border"
 materialType: "官方案例"
+sourceCategory: "广东省和地方的法规"
 tags:
   - "第三批"
   - "16个案例"
@@ -19,11 +20,11 @@ summary: "第三批16个典型案例扩展至商事调解、碳标签互认、�
 relationToRules: "展示新领域的规则接口如何形成可操作安排。"
 relationToMechanisms: "体现统一规则、互认、标准共建、分线管理和科研管理衔接。"
 originalUrl: "https://drc.gd.gov.cn/ywtz/content/post_4655137.html"
-attachmentUrl: "https://drc.gd.gov.cn/attachment/0/570/570514/4655137.pdf"
+attachmentUrl: "/policy-library/18广东省推进粤港澳大湾区规则衔接机制对接典型案例(第三批).pdf"
 citation: "广东省大湾区办：《广东省推进粤港澳大湾区规则衔接机制对接典型案例（第三批）》，2025年1月23日。"
 status: "已摘要"
 visibility: "公开"
-updated: "2026-05-23"
+updated: "2026-05-24"
 ---
 
 ## 研究价值

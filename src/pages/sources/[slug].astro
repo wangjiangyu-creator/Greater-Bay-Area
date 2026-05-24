@@ -42,7 +42,7 @@ const relatedGroups = [
     <span class="eyebrow">政策与法源</span>
     <h1>{entry.data.title}</h1>
     <p class="lede">{entry.data.summary}</p>
-    <MetaList items={[entry.data.issuer, entry.data.materialType, displayDate(entry.data.date)].concat(entry.data.regions)} />
+    <MetaList items={[entry.data.sourceCategory, entry.data.issuer, entry.data.materialType, displayDate(entry.data.date)].concat(entry.data.regions)} />
     <div class="card-statuses">
       <StatusPill value={entry.data.status} />
       <StatusPill value={entry.data.visibility} />
@@ -55,7 +55,18 @@ const relatedGroups = [
     <p>{entry.data.relationToMechanisms}</p>
     <h2>引用</h2>
     <p>{entry.data.citation}</p>
-    <p><a href={entry.data.originalUrl}>原文链接</a>{entry.data.attachmentUrl && <> · <a href={entry.data.attachmentUrl}>附件</a></>}</p>
+    <p>
+      <a href={entry.data.originalUrl}>原文链接</a>
+      {entry.data.attachmentUrl && <> · <a href={entry.data.attachmentUrl}>附件</a></>}
+    </p>
+    {entry.data.englishUrls && entry.data.englishUrls.length > 0 && (
+      <p>
+        官方英文:
+        {entry.data.englishUrls.map((url) => (
+          <> <a href={url}>{url}</a></>
+        ))}
+      </p>
+    )}
     <Content />
   </section>
   <RelatedLinks groups={relatedGroups} />

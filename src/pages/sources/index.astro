@@ -2,9 +2,16 @@
 import { getCollection } from "astro:content";
 import EntryCard from "../../components/EntryCard.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { byUpdatedDesc, displayDate } from "../../lib/content";
+import { byUpdatedDesc, countByStatus, displayDate, uniqueSorted } from "../../lib/content";
 
 const entries = (await getCollection("sources")).sort(byUpdatedDesc);
+const statusStats = countByStatus(entries);
+const statusOptions = uniqueSorted(entries.map((entry) => entry.data.status));
+const visibilityOptions = uniqueSorted(entries.map((entry) => entry.data.visibility));
+const regionOptions = uniqueSorted(entries.flatMap((entry) => entry.data.regions));
+const materialOptions = uniqueSorted(entries.map((entry) => entry.data.materialType));
+const sourceCategoryOptions = uniqueSorted(entries.map((entry) => entry.data.sourceCategory));
+const itemCount = entries.length;
 ---
 
 <BaseLayout title="政策与法源库">
@@ -13,9 +20,106 @@ const entries = (await getCollection("sources")).sort(byUpdatedDesc);
     <h1>政策与法源库</h1>
     <p class="lede">沉淀政策文件、规范文本、司法文件、监管规则、合作协议和官方案例来源。</p>
   </section>
-  <div class="grid cards">
+  <section class="panel">
+    <h2>法源状态分布</h2>
+    <div class="status-stats">
+      {Object.entries(statusStats).map(([status, count]) => (
+        <p><strong>{count}</strong>{status}</p>
+      ))}
+    </div>
+  </section>
+  <section class="list-toolbar panel">
+    <input id="source-query" type="search" placeholder="关键词（标题/摘要）" aria-label="关键词检索" />
+    <select id="source-status" aria-label="状态筛选">
+      <option value="">全部状态</option>
+      {statusOptions.map((status) => <option value={status}>{status}</option>)}
+    </select>
+    <select id="source-visibility" aria-label="公开性筛选">
+      <option value="">全部公开性</option>
+      {visibilityOptions.map((visibility) => <option value={visibility}>{visibility}</option>)}
+    </select>
+    <select id="source-region" aria-label="适用区域筛选">
+      <option value="">全部区域</option>
+      {regionOptions.map((region) => <option value={region}>{region}</option>)}
+    </select>
+    <select id="source-category" aria-label="法源分类筛选">
+      <option value="">全部法源分类</option>
+      {sourceCategoryOptions.map((category) => <option value={category}>{category}</option>)}
+    </select>
+    <select id="source-material" aria-label="资料类型筛选">
+      <option value="">全部资料类型</option>
+      {materialOptions.map((material) => <option value={material}>{material}</option>)}
+    </select>
+    <span id="source-count" class="result-count">共 {itemCount} 条</span>
+  </section>
+  <div class="grid cards" id="source-grid">
     {entries.map((entry) => (
-      <EntryCard href={`/sources/${entry.id}/`} title={entry.data.title} summary={entry.data.summary} meta={[entry.data.materialType, entry.data.issuer, displayDate(entry.data.date)]} status={entry.data.status} visibility={entry.data.visibility} />
+      <div
+        class="filter-item"
+        data-title={entry.data.title}
+        data-summary={entry.data.summary}
+        data-status={entry.data.status}
+        data-visibility={entry.data.visibility}
+        data-regions={entry.data.regions.join(",")}
+        data-material={entry.data.materialType}
+        data-category={entry.data.sourceCategory}
+      >
+        <EntryCard href={`/sources/${entry.id}/`} title={entry.data.title} summary={entry.data.summary} meta={[entry.data.sourceCategory, entry.data.materialType, entry.data.issuer, displayDate(entry.data.date)]} status={entry.data.status} visibility={entry.data.visibility} />
+      </div>
     ))}
   </div>
+  <script>
+    const queryInput = document.getElementById("source-query") as HTMLInputElement | null;
+    const statusSelect = document.getElementById("source-status") as HTMLSelectElement | null;
+    const visibilitySelect = document.getElementById("source-visibility") as HTMLSelectElement | null;
+    const regionSelect = document.getElementById("source-region") as HTMLSelectElement | null;
+    const categorySelect = document.getElementById("source-category") as HTMLSelectElement | null;
+    const materialSelect = document.getElementById("source-material") as HTMLSelectElement | null;
+    const countHint = document.getElementById("source-count") as HTMLElement | null;
+    const items = Array.from(document.querySelectorAll<HTMLElement>("#source-grid .filter-item"));
+
+    function renderSourceList() {
+      const q = (queryInput && queryInput.value.trim().toLowerCase()) || "";
+      const status = statusSelect ? statusSelect.value : "";
+      const visibility = visibilitySelect ? visibilitySelect.value : "";
+      const region = regionSelect ? regionSelect.value : "";
+      const category = categorySelect ? categorySelect.value : "";
+      const material = materialSelect ? materialSelect.value : "";
+
+      let visible = 0;
+      for (const item of items) {
+        const title = (item.dataset.title || "").toLowerCase();
+        const summary = (item.dataset.summary || "").toLowerCase();
+        const itemStatus = item.dataset.status || "";
+        const itemVisibility = item.dataset.visibility || "";
+        const itemRegions = (item.dataset.regions || "").split(",").filter(Boolean);
+        const itemCategory = item.dataset.category || "";
+        const itemMaterial = item.dataset.material || "";
+
+        const show =
+          (!q || title.includes(q) || summary.includes(q)) &&
+          (!status || itemStatus === status) &&
+          (!visibility || itemVisibility === visibility) &&
+          (!region || itemRegions.includes(region)) &&
+          (!category || itemCategory === category) &&
+          (!material || itemMaterial === material);
+
+        if (show) {
+          item.classList.remove("is-hidden");
+          visible += 1;
+        } else {
+          item.classList.add("is-hidden");
+        }
+      }
+      if (countHint) countHint.textContent = `共 ${visible} 条`;
+    }
+
+    queryInput?.addEventListener("input", renderSourceList);
+    statusSelect?.addEventListener("change", renderSourceList);
+    visibilitySelect?.addEventListener("change", renderSourceList);
+    regionSelect?.addEventListener("change", renderSourceList);
+    categorySelect?.addEventListener("change", renderSourceList);
+    materialSelect?.addEventListener("change", renderSourceList);
+    renderSourceList();
+  </script>
 </BaseLayout>

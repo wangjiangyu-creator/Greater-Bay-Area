@@ -2,9 +2,15 @@
 import { getCollection } from "astro:content";
 import EntryCard from "../../components/EntryCard.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { byUpdatedDesc } from "../../lib/content";
+import { byUpdatedDesc, countByStatus, uniqueSorted } from "../../lib/content";
 
 const entries = (await getCollection("cases")).sort(byUpdatedDesc);
+const statusStats = countByStatus(entries);
+const statusOptions = uniqueSorted(entries.map((entry) => entry.data.status));
+const visibilityOptions = uniqueSorted(entries.map((entry) => entry.data.visibility));
+const regionOptions = uniqueSorted(entries.flatMap((entry) => entry.data.regions));
+const batchOptions = uniqueSorted(entries.map((entry) => entry.data.batch));
+const itemCount = entries.length;
 ---
 
 <BaseLayout title="典型案例库">
@@ -13,9 +19,96 @@ const entries = (await getCollection("cases")).sort(byUpdatedDesc);
     <h1>典型案例库</h1>
     <p class="lede">把官方典型案例整理为可分析、可引用、可关联专题和论文的研究卡片。</p>
   </section>
-  <div class="grid cards">
+  <section class="panel">
+    <h2>案例状态分布</h2>
+    <div class="status-stats">
+      {Object.entries(statusStats).map(([status, count]) => (
+        <p><strong>{count}</strong>{status}</p>
+      ))}
+    </div>
+  </section>
+  <section class="list-toolbar panel">
+    <input id="case-query" type="search" placeholder="关键词（标题/创新点）" aria-label="关键词检索" />
+    <select id="case-status" aria-label="状态筛选">
+      <option value="">全部状态</option>
+      {statusOptions.map((status) => <option value={status}>{status}</option>)}
+    </select>
+    <select id="case-visibility" aria-label="公开性筛选">
+      <option value="">全部公开性</option>
+      {visibilityOptions.map((visibility) => <option value={visibility}>{visibility}</option>)}
+    </select>
+    <select id="case-region" aria-label="适用区域筛选">
+      <option value="">全部区域</option>
+      {regionOptions.map((region) => <option value={region}>{region}</option>)}
+    </select>
+    <select id="case-batch" aria-label="批次筛选">
+      <option value="">全部批次</option>
+      {batchOptions.map((batch) => <option value={batch}>{batch}</option>)}
+    </select>
+    <span id="case-count" class="result-count">共 {itemCount} 条</span>
+  </section>
+  <div class="grid cards" id="case-grid">
     {entries.map((entry) => (
-      <EntryCard href={`/cases/${entry.id}/`} title={entry.data.title} summary={entry.data.innovation} meta={[entry.data.batch].concat(entry.data.mechanisms.slice(0, 2))} status={entry.data.status} visibility={entry.data.visibility} />
+      <div
+        class="filter-item"
+        data-title={entry.data.title}
+        data-summary={entry.data.innovation}
+        data-status={entry.data.status}
+        data-visibility={entry.data.visibility}
+        data-regions={entry.data.regions.join(",")}
+        data-batch={entry.data.batch}
+      >
+        <EntryCard href={`/cases/${entry.id}/`} title={entry.data.title} summary={entry.data.innovation} meta={[entry.data.batch].concat(entry.data.mechanisms.slice(0, 2))} status={entry.data.status} visibility={entry.data.visibility} />
+      </div>
     ))}
   </div>
+  <script>
+    const queryInput = document.getElementById("case-query") as HTMLInputElement | null;
+    const statusSelect = document.getElementById("case-status") as HTMLSelectElement | null;
+    const visibilitySelect = document.getElementById("case-visibility") as HTMLSelectElement | null;
+    const regionSelect = document.getElementById("case-region") as HTMLSelectElement | null;
+    const batchSelect = document.getElementById("case-batch") as HTMLSelectElement | null;
+    const countHint = document.getElementById("case-count") as HTMLElement | null;
+    const items = Array.from(document.querySelectorAll<HTMLElement>("#case-grid .filter-item"));
+
+    function renderCaseList() {
+      const q = (queryInput && queryInput.value.trim().toLowerCase()) || "";
+      const status = statusSelect ? statusSelect.value : "";
+      const visibility = visibilitySelect ? visibilitySelect.value : "";
+      const region = regionSelect ? regionSelect.value : "";
+      const batch = batchSelect ? batchSelect.value : "";
+
+      let visible = 0;
+      for (const item of items) {
+        const title = (item.dataset.title || "").toLowerCase();
+        const summary = (item.dataset.summary || "").toLowerCase();
+        const itemStatus = item.dataset.status || "";
+        const itemVisibility = item.dataset.visibility || "";
+        const itemRegions = (item.dataset.regions || "").split(",").filter(Boolean);
+        const itemBatch = item.dataset.batch || "";
+
+        const show =
+          (!q || title.includes(q) || summary.includes(q)) &&
+          (!status || itemStatus === status) &&
+          (!visibility || itemVisibility === visibility) &&
+          (!region || itemRegions.includes(region)) &&
+          (!batch || itemBatch === batch);
+
+        if (show) {
+          item.classList.remove("is-hidden");
+          visible += 1;
+        } else {
+          item.classList.add("is-hidden");
+        }
+      }
+      if (countHint) countHint.textContent = `共 ${visible} 条`;
+    }
+
+    queryInput?.addEventListener("input", renderCaseList);
+    statusSelect?.addEventListener("change", renderCaseList);
+    visibilitySelect?.addEventListener("change", renderCaseList);
+    regionSelect?.addEventListener("change", renderCaseList);
+    batchSelect?.addEventListener("change", renderCaseList);
+    renderCaseList();
+  </script>
 </BaseLayout>
