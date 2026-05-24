@@ -7,7 +7,7 @@
     "dev": "astro dev --host 127.0.0.1 --port 4323",
     "dev:4323": "ASTRO_TELEMETRY_DISABLED=1 ./node_modules/.bin/astro dev --host 127.0.0.1 --port 4323",
     "dev:4323-safe": "if pids=$(lsof -ti tcp:4323); then kill -9 $pids; fi; ASTRO_TELEMETRY_DISABLED=1 ./node_modules/.bin/astro dev --host 127.0.0.1 --port 4323",
-    "build": "astro check && astro build",
+    "build": "astro check && astro build && node scripts/rewrite-static-preview-paths.mjs",
     "preview": "astro preview --host 127.0.0.1 --port 4323",
     "test": "vitest run",
     "test:watch": "vitest",

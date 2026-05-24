@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { NAV_ITEMS } from "../lib/navigation";
 import { withBase } from "../lib/paths";
 
 interface Props {
@@ -28,12 +29,7 @@ const pageTitle = `${title} | 粤港澳大湾区法制一体化研究门户`;
             <span>规则衔接 · 机制对接</span>
           </a>
           <nav class="nav" aria-label="主导航">
-            <a href={withBase("/topics/")}>专题</a>
-            <a href={withBase("/sources/")}>法源</a>
-            <a href={withBase("/cases/")}>案例</a>
-            <a href={withBase("/comparisons/")}>对照</a>
-            <a href={withBase("/outputs/")}>研究成果</a>
-            <a href={withBase("/search/")}>检索</a>
+            {NAV_ITEMS.map((item) => <a href={withBase(item.href)}>{item.label}</a>)}
           </nav>
         </div>
       </header>
