@@ -4,6 +4,7 @@ import { getStaticPreviewPrefix, rewriteStaticPreviewHtml } from "../src/lib/sta
 describe("static preview path rewriting", () => {
   it("computes the relative prefix for nested pages", () => {
     expect(getStaticPreviewPrefix("index.html")).toBe("./");
+    expect(getStaticPreviewPrefix("theory/index.html")).toBe("../");
     expect(getStaticPreviewPrefix("comparative-law/index.html")).toBe("../");
     expect(getStaticPreviewPrefix("cases/foo/index.html")).toBe("../../");
   });
@@ -11,6 +12,7 @@ describe("static preview path rewriting", () => {
   it("rewrites root-relative asset and navigation urls for file previews", () => {
     const html = [
       '<link rel="stylesheet" href="/_astro/app.css">',
+      '<a href="/theory/">理论</a>',
       '<a href="/comparative-law/">比较法</a>',
       '<a href="/">首页</a>',
       '<img src="/images/example.png" alt="example">'
@@ -19,6 +21,7 @@ describe("static preview path rewriting", () => {
     const rewritten = rewriteStaticPreviewHtml(html, "comparative-law/index.html");
 
     expect(rewritten).toContain('href="../_astro/app.css"');
+    expect(rewritten).toContain('href="../theory/"');
     expect(rewritten).toContain('href="../comparative-law/"');
     expect(rewritten).toContain('href="../"');
     expect(rewritten).toContain('src="../images/example.png"');

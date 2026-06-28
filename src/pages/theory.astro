@@ -1,0 +1,104 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { THEORY_FIELD_COUNTS, THEORY_FRAMEWORKS } from "../lib/theory";
+
+const literatureCount = THEORY_FRAMEWORKS.reduce(
+  (count, framework) => count + framework.representativeLiterature.length,
+  0
+);
+---
+
+<BaseLayout
+  title="理论"
+  description="理论栏目：整理经济一体化、法律一体化和跨域治理的主要理论流派、分析框架及代表文献，为大湾区规则融合研究提供方法论入口。"
+>
+  <section class="page-header">
+    <span class="eyebrow">理论</span>
+    <h1>经济一体化与法律一体化理论谱系</h1>
+    <p class="lede">
+      本页把大湾区规则融合研究常用的理论资源整理为可直接使用的框架库，覆盖经济一体化、区域一体化政治经济学、制度经济学、法律协调、互认、法律移植、法律多元主义和跨国法律过程等路径。
+    </p>
+  </section>
+
+  <section class="section split">
+    <div class="panel comparative-overview">
+      <h2>理论导引</h2>
+      <div class="status-stats">
+        <p><strong>{THEORY_FRAMEWORKS.length}</strong>理论框架</p>
+        <p><strong>{THEORY_FIELD_COUNTS["经济一体化"] || 0}</strong>经济一体化</p>
+        <p><strong>{THEORY_FIELD_COUNTS["法律一体化"] || 0}</strong>法律一体化</p>
+        <p><strong>{THEORY_FIELD_COUNTS["跨域治理"] || 0}</strong>跨域治理</p>
+        <p><strong>{literatureCount}</strong>代表文献</p>
+      </div>
+      <div class="comparative-anchor-list">
+        {THEORY_FRAMEWORKS.map((framework) => (
+          <a href={`#${framework.id}`} class="comparative-anchor-link">
+            <strong>{framework.title}</strong>
+            <span>{framework.field}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+    <aside class="panel comparative-overview">
+      <h2>使用方式</h2>
+      <ul class="comparative-plain-list">
+        <li>写总论时，可先用阶段论、制度经济学和多层级治理界定规则融合的层次与成本。</li>
+        <li>写具体机制时，可用互认、等效认可、示范法和实验主义治理解释制度工具。</li>
+        <li>写法治化路径时，可从法律移植、法律多元主义和跨国法律过程切入。</li>
+        <li>每个框架下的文献链接用于快速进入书目页、出版社页、期刊页或公开论文页。</li>
+      </ul>
+    </aside>
+  </section>
+
+  {THEORY_FRAMEWORKS.map((framework) => (
+    <section class="section comparative-module" id={framework.id}>
+      <div class="page-header comparative-module-header">
+        <span class="mini-type">{framework.field}</span>
+        <h2>{framework.title}</h2>
+        <p>{framework.coreClaim}</p>
+        <ul class="comparative-tag-list" aria-label={`${framework.title}理论标签`}>
+          <li>{framework.school}</li>
+        </ul>
+      </div>
+
+      <div class="grid cards">
+        <article class="panel comparative-detail-card">
+          <h3>分析框架</h3>
+          <ul class="comparative-plain-list">
+            {framework.framework.map((item) => <li>{item}</li>)}
+          </ul>
+        </article>
+
+        <article class="panel comparative-detail-card">
+          <h3>代表文献</h3>
+          <ul class="comparative-detail-list">
+            {framework.representativeLiterature.map((entry) => (
+              <li>
+                <strong>{entry.title}</strong>
+                <span>{entry.authors} · {entry.year}</span>
+                <p>{entry.note}</p>
+                <a class="comparative-source-link" href={entry.sourceHref} target="_blank" rel="noreferrer">
+                  {entry.sourceLabel}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article class="panel comparative-detail-card">
+          <h3>大湾区适用</h3>
+          <p>{framework.gbaUse}</p>
+          <h3>使用边界</h3>
+          <p>{framework.caution}</p>
+        </article>
+
+        <article class="panel comparative-detail-card">
+          <h3>可展开问题</h3>
+          <ul class="comparative-plain-list">
+            {framework.researchQuestions.map((question) => <li>{question}</li>)}
+          </ul>
+        </article>
+      </div>
+    </section>
+  ))}
+</BaseLayout>
