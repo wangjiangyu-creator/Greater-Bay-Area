@@ -62,7 +62,9 @@ export const SOURCE_CATEGORIES = [
   "中央政策文件",
   "广东省地政策文件",
   "广东省和地方的法规",
-  "香港政府和有关组织文件"
+  "香港政府和有关组织文件",
+  "澳门政府和有关组织文件",
+  "跨区域合作安排"
 ] as const;
 
 export const STATUS_VALUES = [

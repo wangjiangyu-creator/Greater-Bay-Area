@@ -18,10 +18,12 @@ keyQuestions:
 relatedSources:
   - "gd-professional-title-qualification-recognition-2019"
   - "cepa-hk-service-trade-second-amendment-2024"
+  - "qianhai-hk-veterinary-filing-measures-2026"
 status: "已入库"
 visibility: "公开"
-updated: 2026-05-24
+updated: 2026-06-28
 ---
 
 该对照为人才流动和专业服务开放提供基础问题清单。
 
+2026年新增的香港注册兽医前海备案案例提示，专业资格衔接正在向更细分的生活服务和动物健康领域延伸。后续对照应区分“承认资格”“备案执业”和“开放具体服务事项”三个层次。

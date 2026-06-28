@@ -18,10 +18,12 @@ keyQuestions:
 relatedSources:
   - "hk-elderly-health-care-voucher-gba-pilot-2024"
   - "gd-rule-connection-cases-third-batch-2025"
+  - "hk-cross-boundary-ambulance-mainland-first-transfer-2026"
 status: "需专家确认"
 visibility: "公开"
-updated: 2026-05-24
+updated: 2026-06-28
 ---
 
 该对照用于把医疗产品准入和民生医疗服务衔接放在同一健康湾区框架下。
 
+2026年跨境直通救护车香港转送内地个案显示，健康湾区规则衔接还需要覆盖急救转运、口岸优先通行、患者资料共享和医疗责任配置。
