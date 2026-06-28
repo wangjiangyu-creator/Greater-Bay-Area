@@ -120,32 +120,72 @@ const latestUpdated = allMaterials.slice(0, 8);
   </section>
 
   <section class="section">
-    <h2>第一期专题</h2>
-    <div class="grid cards">
-      {firstPhaseTopics.slice(0, 6).map((entry) => (
-        <EntryCard
-          title={entry.data.title}
-          href={withBase(`/topics/${entry.id}/`)}
-          eyebrow={entry.data.priority}
-          summary={entry.data.summary}
-          meta={[entry.data.status, entry.data.visibility, ...entry.data.regions.slice(0, 3)]}
-          tags={entry.data.mechanisms.slice(0, 3)}
-        />
-      ))}
+    <h2>最新动态</h2>
+    <div class="content-body">
+      {latestUpdated.length === 0 ? (
+        <p>暂无新增内容。</p>
+      ) : (
+        <ul class="mini-list">
+          {latestUpdated.map((item) => (
+            <li>
+              <span class="mini-type">{item.kind}</span>
+              <a href={item.href}>{item.title}</a>
+              <p>{item.summary}</p>
+              <small>{item.updated.toISOString().slice(0, 10)}</small>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   </section>
 
+  <section class="section split">
+    <div>
+      <h2>第一期专题</h2>
+      <div class="grid cards">
+        {firstPhaseTopics.slice(0, 6).map((entry) => (
+          <EntryCard
+            href={`/topics/${entry.id}/`}
+            title={entry.data.title}
+            summary={entry.data.summary}
+            meta={[entry.data.priority, ...entry.data.mechanisms.slice(0, 2)]}
+            status={entry.data.status}
+            visibility={entry.data.visibility}
+          />
+        ))}
+      </div>
+    </div>
+    <aside class="panel">
+      <h2>近期资料</h2>
+      <ul>
+        {sources.slice(0, 5).map((entry) => (
+          <li><a href={withBase(`/sources/${entry.id}/`)}>{entry.data.title}</a></li>
+        ))}
+      </ul>
+    </aside>
+  </section>
+
   <section class="section">
-    <h2>最新更新</h2>
+    <h2>案例与研究成果</h2>
     <div class="grid cards">
-      {latestUpdated.map((entry) => (
+      {cases.slice(0, 3).map((entry) => (
         <EntryCard
-          title={entry.title}
-          href={entry.href}
-          eyebrow={entry.kind}
-          summary={entry.summary}
-          meta={[entry.updated.toISOString().slice(0, 10)]}
-          tags={entry.tags.slice(0, 4)}
+          href={`/cases/${entry.id}/`}
+          title={entry.data.title}
+          summary={entry.data.innovation}
+          meta={[entry.data.batch].concat(entry.data.mechanisms.slice(0, 2))}
+          status={entry.data.status}
+          visibility={entry.data.visibility}
+        />
+      ))}
+      {outputs.slice(0, 2).map((entry) => (
+        <EntryCard
+          href={`/outputs/${entry.id}/`}
+          title={entry.data.title}
+          summary={entry.data.summary}
+          meta={[entry.data.outputType, entry.data.version]}
+          status={entry.data.status}
+          visibility={entry.data.visibility}
         />
       ))}
     </div>
